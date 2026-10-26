@@ -1,14 +1,4 @@
- /* Estilos do Tabuleiro e Labirinto dos Gladiadores */
-.area-batalha {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    color: #fff;
-    background-color: #121212;
-    min-height: 80vh;
-}
-
+ /* Tabuleiro e Labirinto dos Gladiadores */
 .tabuleiro-grid {
     display: grid;
     grid-template-columns: repeat(8, 50px);
@@ -17,8 +7,8 @@
     background-color: #333;
     padding: 10px;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    margin-bottom: 20px;
+    margin: 20px auto;
+    justify-content: center;
 }
 
 .celula-labirinto {
@@ -30,13 +20,10 @@
     justify-content: center;
     font-size: 24px;
     border-radius: 4px;
-    transition: background-color 0.2s;
 }
 
-/* Doutrinas visuais das peças */
 .celula-labirinto.saida {
-    background-color: #d4af37; /* Dourado para a saída dinâmica */
-    animation: pulsar 1.5s infinite;
+    background-color: #d4af37;
 }
 
 .celula-labirinto.gladiador {
@@ -52,54 +39,4 @@
 .celula-labirinto.soldado {
     background-color: #641e16;
     border: 2px solid #e74c3c;
-}
-
-/* Painel de Comandos */
-.painel-comandos {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    background: #1e1e1e;
-    padding: 15px;
-    border-radius: 8px;
-    width: 100%;
-    max-width: 400px;
-}
-
-.botoes-direcao {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-
-.botoes-meio {
-    display: flex;
-    gap: 40px;
-}
-
-.btn-acao, .btn-ataque {
-    background-color: #2980b9;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.btn-ataque {
-    background-color: #c0392b;
-    margin-top: 10px;
-}
-
-.btn-acao:hover, .btn-ataque:hover {
-    opacity: 0.9;
-}
-
-@keyframes pulsar {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
 }
