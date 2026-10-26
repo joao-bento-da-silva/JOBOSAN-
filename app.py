@@ -50,12 +50,13 @@ def inicializar_banco():
 inicializar_banco()
 
 def login_obrigatorio(fn):
-@wraps(fn)
-def wrapper(*args, **kwargs):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
         if not session.get("usuario_id"):
             return redirect(url_for("entrar"))
         return fn(*args, **kwargs)
     return wrapper
+
 
 @app.route("/")
 def index():
