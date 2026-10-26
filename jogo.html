@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Xadrez Inverso — JOBOSAN Jogos{% endblock %}
+{% block content %}
+<div class="jogo-cabecalho">
+  <a class="voltar" href="{{ url_for('painel') }}">← Painel</a>
+  <div class="hero-selo">JOGO 01 · LABIRINTO</div>
+  <h1>Fuga dos Plebeus</h1>
+  <p class="subtexto">Selecione um plebeu e clique numa casa adjacente. Encontre a saída dourada!</p>
+</div>
+<div class="jogo-layout">
+  <section class="tabuleiro-wrap">
+    <div class="tabuleiro" id="tabuleiro" aria-label="Tabuleiro do labirinto"></div>
+  </section>
+  <aside class="painel-jogo">
+    <div class="fase-label" id="fase-nome">Fase 1: O Cerco Inicial</div>
+    <div class="medidor"><span>Turno</span><strong id="turno">0 / 20</strong></div>
+    <div class="medidor"><span>Salvos</span><strong id="salvos">0 / 3</strong></div>
+    <div class="medidor"><span>Capturados</span><strong id="capturados">0</strong></div>
+    <div class="medidor"><span>Pontos desta partida</span><strong id="pontos">0</strong></div>
+    <p id="mensagem" class="mensagem" aria-live="polite">Selecione um plebeu para começar.</p>
+    <button id="reiniciar" class="botao secundario largura" type="button">Reiniciar partida</button>
+    <div class="legenda">
+      <span>♟ Plebeu</span><span>♚ Rei</span><span>♛ Rainha</span><span>♝ Bispo</span><span>■ Parede</span><span>⇧ Saída</span>
+    </div>
+  </aside>
+</div>
+<script src="{{ url_for('static', filename='game.js') }}"></script>
+{% endblock %}
