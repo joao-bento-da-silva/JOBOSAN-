@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: jobosan-jogos
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: DATABASE_PATH
+        value: /var/data/jobosan_jogos.db
+    disk:
+      name: jobosan-jogos-dados
+      mountPath: /var/data
+      sizeGB: 1
