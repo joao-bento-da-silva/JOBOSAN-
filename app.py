@@ -3,7 +3,7 @@ import sqlite3
 import secrets
 from functools import wraps
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify 
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
