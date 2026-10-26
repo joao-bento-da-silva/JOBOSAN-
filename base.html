@@ -1,29 +1,271 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}JOBOSAN Jogos{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-<header class="topo">
-  <a class="marca" href="{{ url_for('index') }}"><span class="marca-icone">♟</span> JOBOSAN <b>JOGOS</b></a>
-  {% if session.get('usuario_id') %}
-  <div class="topo-direita">
-    <span>Olá, {{ session.get('usuario_nome', 'jogador') }}</span>
-    <form method="post" action="{{ url_for('sair') }}"><button class="link-btn" type="submit">Sair</button></form>
-  </div>
-  {% endif %}
-</header>
-<main class="pagina">
-  {% with mensagens = get_flashed_messages(with_categories=true) %}
-    {% for categoria, mensagem in mensagens %}
-      <div class="aviso {{ categoria }}">{{ mensagem }}</div>
-    {% endfor %}
-  {% endwith %}
-  {% block content %}{% endblock %}
-</main>
-<footer>JOBOSAN Jogos · Aplicativo independente</footer>
-</body>
-</html>
+ {% extends "base.html" %}
+{% block conteudo %}
+
+<div class="area-batalha" style="
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:20px;
+    color:#fff;
+    background:#121212;
+    min-height:80vh;
+    box-sizing:border-box;
+">
+
+    <h2>🏰 Fuga dos Gladiadores no Castelo</h2>
+
+    <div class="status-jogo" style="margin-bottom:15px;text-align:center;">
+        <p>
+            Gladiadores: <span id="qtd-gladiadores">1</span>
+            | Turno: <span id="turno-atual">1</span> / 20
+        </p>
+        <a href="{{ url_for('painel') }}" style="color:#3498db;">
+            Sair para o Painel
+        </a>
+    </div>
+
+    <div id="mensagem-jogo"
+         role="status"
+         style="margin-bottom:12px;text-align:center;">
+        Encontre a saída do castelo!
+    </div>
+
+    <div id="tabuleiro-labirinto" style="
+        display:grid;
+        grid-template-columns:repeat(8,minmax(0,1fr));
+        gap:3px;
+        background:#333;
+        padding:8px;
+        border-radius:8px;
+        width:100%;
+        max-width:400px;
+        aspect-ratio:1;
+        box-sizing:border-box;
+        margin-bottom:20px;
+    "></div>
+
+    <div class="painel-comandos" style="
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:10px;
+        background:#1e1e1e;
+        padding:15px;
+        border-radius:8px;
+        width:100%;
+        max-width:350px;
+        box-sizing:border-box;
+    ">
+
+        <h3>Comandos do Gladiador</h3>
+
+        <button type="button" class="btn-acao"
+                onclick="moverGladiador('cima')">
+            ⬆️ Cima
+        </button>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+            <button type="button" class="btn-acao"
+                    onclick="moverGladiador('esquerda')">
+                ⬅️ Esquerda
+            </button>
+
+            <button type="button" class="btn-acao"
+                    onclick="moverGladiador('direita')">
+                ➡️ Direita
+            </button>
+        </div>
+
+        <button type="button" class="btn-acao"
+                onclick="moverGladiador('baixo')">
+            ⬇️ Baixo
+        </button>
+
+        <button type="button" class="btn-ataque"
+                onclick="tentarContraAtaque()"
+                style="background:#c0392b;color:white;padding:10px;border:0;border-radius:5px;">
+            ⚔️ Contra-Atacar
+        </button>
+
+        <button type="button" onclick="reiniciarJogo()">
+            🔄 Reiniciar jogo
+        </button>
+    </div>
+</div>
+
+<style>
+    #tabuleiro-labirinto .celula {
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        aspect-ratio:1;
+        min-width:0;
+        background:#1e1e1e;
+        border-radius:4px;
+        font-size:clamp(17px,5vw,28px);
+        user-select:none;
+    }
+
+    .area-batalha .btn-acao {
+        background:#2980b9;
+        color:white;
+        border:0;
+        padding:10px 14px;
+        border-radius:5px;
+        cursor:pointer;
+    }
+
+    .area-batalha button:disabled {
+        opacity:.5;
+        cursor:not-allowed;
+    }
+</style>
+
+<script>
+(function () {
+    function iniciarJogo() {
+        const tabuleiro = document.getElementById("tabuleiro-labirinto");
+
+        if (!tabuleiro || tabuleiro.dataset.iniciado === "sim") {
+            return;
+        }
+
+        tabuleiro.dataset.iniciado = "sim";
+
+        const tamanho = 8;
+        const saida = {x: 7, y: 0};
+
+        let posicao;
+        let turno;
+        let terminou;
+
+        // Paredes fixas do labirinto.
+        const paredes = [
+            "1,0", "1,1", "1,2",
+            "3,2", "4,2", "5,2",
+            "5,3", "2,4", "3,4",
+            "3,5", "5,5", "6,5",
+            "1,6", "2,6"
+        ];
+
+        const bloqueadas = new Set(paredes);
+
+        // Garante que a posição inicial esteja livre.
+        bloqueadas.delete("0,7");
+
+        const mensagem = document.getElementById("mensagem-jogo");
+        const turnoElemento = document.getElementById("turno-atual");
+        const botoes = document.querySelectorAll(
+            ".painel-comandos button"
+        );
+
+        function informar(texto) {
+            mensagem.textContent = texto;
+        }
+
+        function desenharTabuleiro() {
+            tabuleiro.innerHTML = "";
+
+            for (let y = 0; y < tamanho; y++) {
+                for (let x = 0; x < tamanho; x++) {
+                    const celula = document.createElement("div");
+                    celula.className = "celula";
+
+                    if (bloqueadas.has(x + "," + y)) {
+                        celula.textContent = "🧱";
+                        celula.style.background = "#555";
+                        celula.setAttribute("aria-label", "Parede");
+                    } else if (x === posicao.x && y === posicao.y) {
+                        celula.textContent = "🛡️";
+                        celula.style.background = "#2c3e50";
+                        celula.style.border = "2px solid #3498db";
+                        celula.setAttribute("aria-label", "Gladiador");
+                    } else if (x === saida.x && y === saida.y) {
+                        celula.textContent = "🚪";
+                        celula.style.background = "#b7950b";
+                        celula.setAttribute("aria-label", "Saída");
+                    } else {
+                        celula.textContent = "";
+                    }
+
+                    tabuleiro.appendChild(celula);
+                }
+            }
+
+            turnoElemento.textContent = turno;
+            botoes.forEach(botao => {
+                botao.disabled = terminou;
+            });
+        }
+
+        window.moverGladiador = function (direcao) {
+            if (terminou) return;
+
+            const movimentos = {
+                cima: {x: 0, y: -1},
+                baixo: {x: 0, y: 1},
+                esquerda: {x: -1, y: 0},
+                direita: {x: 1, y: 0}
+            };
+
+            const movimento = movimentos[direcao];
+            if (!movimento) return;
+
+            const nx = posicao.x + movimento.x;
+            const ny = posicao.y + movimento.y;
+
+            if (nx < 0 || nx >= tamanho || ny < 0 || ny >= tamanho) {
+                informar("Você chegou ao limite do tabuleiro.");
+                return;
+            }
+
+            if (bloqueadas.has(nx + "," + ny)) {
+                informar("Caminho bloqueado! Escolha outra direção.");
+                return;
+            }
+
+            posicao = {x: nx, y: ny};
+            turno++;
+
+            if (posicao.x === saida.x && posicao.y === saida.y) {
+                terminou = true;
+                informar("🏆 Vitória! Você escapou do castelo!");
+            } else if (turno > 20) {
+                terminou = true;
+                informar("Fim de jogo! Você ultrapassou o limite de turnos.");
+            } else {
+                informar("Continue procurando o caminho até a saída.");
+            }
+
+            desenharTabuleiro();
+        };
+
+        window.tentarContraAtaque = function () {
+            if (terminou) return;
+
+            informar(
+                "⚔️ Você se preparou para o contra-ataque. " +
+                "Continue avançando em direção à saída!"
+            );
+        };
+
+        window.reiniciarJogo = function () {
+            posicao = {x: 0, y: 7};
+            turno = 1;
+            terminou = false;
+            informar("Encontre a saída do castelo!");
+            desenharTabuleiro();
+        };
+
+        window.reiniciarJogo();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", iniciarJogo);
+    } else {
+        iniciarJogo();
+    }
+})();
+</script>
+
+{% endblock %}
