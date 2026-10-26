@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import secrets
+import random
 from functools import wraps
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify 
@@ -12,7 +13,7 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("COOKIE_SECURE", "0") == "1"
 
-# Local default. For persistent data on Render, set DATABASE_PATH to a file on a mounted disk.
+# Caminho do banco de dados SQLite
 DATABASE_PATH = os.environ.get("DATABASE_PATH", os.path.join(os.path.dirname(__file__), "jobosan_jogos.db"))
 
 def conectar():
@@ -123,10 +124,17 @@ def painel():
         ).fetchone()
     return render_template("painel.html", progresso=progresso)
 
+# Rota principal do Jogo com as novas especificações dos Gladiadores
 @app.route("/jogo")
 @login_obrigatorio
 def jogo():
-    return render_template("jogo.html")
+    # Passamos as configurações padrão do Labirinto para a renderização do HTML
+    config_jogo = {
+        "qtd_gladiadores": 4,
+        "limite_turnos": 20,
+        "saida_dinamica": True
+    }
+    return render_template("jogo.html", config=config_jogo)
 
 @app.route("/api/resultado", methods=["POST"])
 @login_obrigatorio
@@ -137,7 +145,7 @@ def resultado():
         fases = int(dados.get("fases_concluidas", 0))
     except (TypeError, ValueError):
         return jsonify(ok=False, erro="Resultado inválido."), 400
-    # O servidor limita os valores recebidos para evitar números absurdos.
+
     pontos = max(0, min(pontos, 5000))
     fases = max(0, min(fases, 4))
     agora = datetime.utcnow().isoformat()
