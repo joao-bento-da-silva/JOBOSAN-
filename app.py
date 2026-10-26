@@ -12,7 +12,6 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("COOKIE_SECURE", "0") == "1"
 
-# Caminho absoluto para garantir consistência no banco de dados
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASE_PATH = os.environ.get("DATABASE_PATH", os.path.join(BASE_DIR, "jobosan_jogos.db"))
 
@@ -46,7 +45,6 @@ def inicializar_banco():
             )
         """)
 
-# Inicializa o banco ao iniciar a aplicação
 inicializar_banco()
 
 def login_obrigatorio(fn):
@@ -56,7 +54,6 @@ def login_obrigatorio(fn):
             return redirect(url_for("entrar"))
         return fn(*args, **kwargs)
     return wrapper
-
 
 @app.route("/")
 def index():
