@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}JOBOSAN Jogos{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topo">
+  <a class="marca" href="{{ url_for('index') }}"><span class="marca-icone">♟</span> JOBOSAN <b>JOGOS</b></a>
+  {% if session.get('usuario_id') %}
+  <div class="topo-direita">
+    <span>Olá, {{ session.get('usuario_nome', 'jogador') }}</span>
+    <form method="post" action="{{ url_for('sair') }}"><button class="link-btn" type="submit">Sair</button></form>
+  </div>
+  {% endif %}
+</header>
+<main class="pagina">
+  {% with mensagens = get_flashed_messages(with_categories=true) %}
+    {% for categoria, mensagem in mensagens %}
+      <div class="aviso {{ categoria }}">{{ mensagem }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<footer>JOBOSAN Jogos · Aplicativo independente</footer>
+</body>
+</html>
