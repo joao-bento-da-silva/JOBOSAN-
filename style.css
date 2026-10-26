@@ -1,0 +1,59 @@
+:root{--fundo:#101714;--painel:#1c2621;--painel2:#24332b;--texto:#f4f5ef;--suave:#b5c1b8;--verde:#9fca9d;--verde-escuro:#245d43;--ouro:#edbd4b;--borda:#35483c}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#1c3026 0,#101714 58%);color:var(--texto);font-family:system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+a{color:var(--verde)}
+.topo{display:flex;justify-content:space-between;align-items:center;padding:16px clamp(16px,5vw,60px);border-bottom:1px solid #2d3b32;background:#101714eF;gap:12px}
+.marca{font-size:17px;letter-spacing:1px;color:white;text-decoration:none;font-weight:800;display:flex;gap:9px;align-items:center}
+.marca b{color:var(--verde)}
+.marca-icone{display:grid;place-items:center;background:var(--verde-escuro);width:34px;height:34px;border-radius:10px;font-size:22px}
+.topo-direita{display:flex;align-items:center;gap:14px;color:var(--suave);font-size:14px}
+.topo-direita form{margin:0}.link-btn{background:none;border:0;color:var(--verde);text-decoration:underline;cursor:pointer;font:inherit}
+.pagina{max-width:1100px;margin:0 auto;padding:30px 18px 56px}
+footer{text-align:center;padding:20px;color:#819187;font-size:12px;border-top:1px solid #26352c}
+.hero{position:relative;overflow:hidden;min-height:480px;padding:clamp(24px,6vw,70px);background:linear-gradient(115deg,#1c3026,#17221c 65%,#263a2c);border:1px solid var(--borda);border-radius:24px}
+.hero h1{font-size:clamp(38px,7vw,68px);line-height:1.04;letter-spacing:-2px;margin:18px 0}
+.hero h1 span{color:var(--verde)}
+.hero p{max-width:520px;line-height:1.7;color:var(--suave);font-size:17px}
+.hero-selo,.tag{font-size:11px;letter-spacing:1.5px;color:var(--verde);font-weight:800}
+.acoes{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.botao{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid transparent;border-radius:10px;padding:12px 17px;font-weight:750;font-size:14px;cursor:pointer;transition:transform .15s}
+.botao:hover{transform:translateY(-1px)}
+.primario{background:var(--verde);color:#102017}.secundario{background:transparent;border-color:#5b7162;color:var(--texto)}
+.largura{width:100%}
+.mini-tabuleiro{position:absolute;right:5%;top:50%;transform:translateY(-40%);width:min(34%,270px);display:grid;grid-template-columns:repeat(8,1fr);gap:3px;opacity:.9;rotate:7deg}
+.mini-tabuleiro div{aspect-ratio:1;display:grid;place-items:center;border-radius:3px;font-size:clamp(9px,2vw,19px)}
+.mini-tabuleiro .casa{background:#a9c49e;color:#253b2b}.mini-tabuleiro .parede{background:#34463a}.mini-tabuleiro .saida{background:var(--ouro);color:#3d2b00}
+.auth-card{max-width:440px;margin:20px auto;background:var(--painel);border:1px solid var(--borda);border-radius:20px;padding:clamp(22px,5vw,36px)}
+.auth-card h1,.cabecalho-painel h1,.jogo-cabecalho h1{margin:14px 0 8px;font-size:clamp(28px,5vw,40px)}
+.subtexto{color:var(--suave);line-height:1.6}
+.voltar{display:inline-block;text-decoration:none;margin-bottom:18px;color:var(--verde)}
+.formulario{display:grid;gap:16px;margin-top:24px}
+.formulario label{display:grid;gap:8px;font-size:13px;color:#dce5dd;font-weight:650}
+.formulario input{width:100%;padding:13px;border-radius:9px;border:1px solid #43584a;background:#111a15;color:white;font:inherit}
+.formulario input:focus{outline:2px solid var(--verde)}
+.troca{text-align:center;color:var(--suave);font-size:13px;margin-top:22px}
+.aviso{padding:12px 14px;border-radius:9px;margin-bottom:12px}.aviso.erro{background:#492b2a;color:#ffd8d5}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}
+.stat{padding:18px;background:var(--painel);border:1px solid var(--borda);border-radius:14px;display:grid;gap:7px}
+.stat span{color:var(--suave);font-size:13px}.stat strong{font-size:28px}
+.jogo-card{display:grid;grid-template-columns:minmax(180px,.8fr) 1.2fr;background:var(--painel);border:1px solid var(--borda);border-radius:20px;overflow:hidden}
+.jogo-arte{min-height:230px;background:repeating-conic-gradient(#81977a 0% 25%,#dce3ce 0% 50%) 50%/50px 50px;display:grid;place-items:center;position:relative}
+.arte-peca{font-size:90px;color:#1b3022;text-shadow:0 3px 2px #fff8}
+.arte-saida{position:absolute;right:14px;top:14px;background:var(--ouro);color:#392a00;font-size:10px;font-weight:900;padding:8px;border-radius:5px}
+.jogo-info{padding:clamp(20px,4vw,34px)}.jogo-info h2{font-size:26px}.jogo-info p{line-height:1.7;color:var(--suave);margin-bottom:22px}
+.jogo-cabecalho{text-align:center;margin-bottom:25px}.jogo-cabecalho .voltar{display:block;text-align:left}
+.jogo-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr);gap:18px;align-items:start}
+.tabuleiro-wrap,.painel-jogo{background:var(--painel);border:1px solid var(--borda);padding:clamp(10px,2vw,18px);border-radius:18px}
+.tabuleiro{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:3px;width:100%;max-width:580px;margin:auto}
+.casa{border:2px solid transparent;aspect-ratio:1;min-width:0;display:grid;place-items:center;font-size:clamp(17px,4.8vw,36px);font-weight:700;border-radius:4px;position:relative;padding:0;cursor:pointer}
+.casa.clara{background:#e7e7d4;color:#26392b}.casa.escura{background:#8da582;color:#26392b}
+.casa.parede{background:#303a34;color:#303a34;cursor:default}
+.casa.saida{background:var(--ouro);color:#4a3500;box-shadow:inset 0 0 0 2px #ffdf83}
+.casa.selecionada{border-color:#ffd65c;box-shadow:inset 0 0 0 2px #ffd65c}
+.casa.destino{outline:2px dashed #fff6a8;outline-offset:-5px}
+.painel-jogo{display:grid;gap:12px}.fase-label{font-weight:800;color:var(--verde);margin-bottom:5px}
+.medidor{display:flex;justify-content:space-between;gap:10px;padding:12px;background:#121b16;border-radius:9px;font-size:13px}.medidor span{color:var(--suave)}.medidor strong{font-variant-numeric:tabular-nums}
+.mensagem{line-height:1.5;min-height:48px;background:#26382d;padding:12px;border-radius:9px;color:#e5f0e3;font-size:13px}
+.legenda{display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:var(--suave)}.legenda span{background:#121b16;padding:6px 8px;border-radius:6px}
+@media(max-width:720px){.mini-tabuleiro{opacity:.16;width:55%;right:-5%;top:58%}.hero{min-height:440px}.jogo-layout{grid-template-columns:1fr}.jogo-card{grid-template-columns:1fr}.jogo-arte{min-height:140px}.stats{gap:7px}.stat{padding:12px}.stat strong{font-size:22px}.stat span{font-size:11px}}
+@media(max-width:400px){.topo{padding:12px}.topo-direita{font-size:12px}.pagina{padding-left:10px;padding-right:10px}.stats{grid-template-columns:1fr}.stats .stat{display:flex;justify-content:space-between;align-items:center}}
