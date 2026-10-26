@@ -1,10 +1,9 @@
-import os
+ import os
 import sqlite3
 import secrets
-import random
 from functools import wraps
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify 
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify 
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
@@ -13,8 +12,9 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("COOKIE_SECURE", "0") == "1"
 
-# Caminho do banco de dados SQLite
-DATABASE_PATH = os.environ.get("DATABASE_PATH", os.path.join(os.path.dirname(__file__), "jobosan_jogos.db"))
+# Caminho absoluto para garantir consistência no banco de dados
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+DATABASE_PATH = os.environ.get("DATABASE_PATH", os.path.join(BASE_DIR, "jobosan_jogos.db"))
 
 def conectar():
     conn = sqlite3.connect(DATABASE_PATH, timeout=30)
@@ -46,11 +46,12 @@ def inicializar_banco():
             )
         """)
 
+# Inicializa o banco ao iniciar a aplicação
 inicializar_banco()
 
 def login_obrigatorio(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
+@wraps(fn)
+def wrapper(*args, **kwargs):
         if not session.get("usuario_id"):
             return redirect(url_for("entrar"))
         return fn(*args, **kwargs)
@@ -68,30 +69,32 @@ def cadastro():
         nome = request.form.get("nome", "").strip()
         email = request.form.get("email", "").strip().lower()
         senha = request.form.get("senha", "")
+        
         if len(nome) < 2:
-            flash("Informe seu nome (pelo menos 2 caracteres).", "erro")
+            return render_template("auth.html", titulo="Criar conta", cadastro=True, erro="Informe seu nome (pelo menos 2 caracteres).")
         elif "@" not in email or len(email) > 254:
-            flash("Informe um e-mail válido.", "erro")
+            return render_template("auth.html", titulo="Criar conta", cadastro=True, erro="Informe um e-mail válido.")
         elif len(senha) < 8:
-            flash("A senha precisa ter pelo menos 8 caracteres.", "erro")
-        else:
-            try:
-                with conectar() as conn:
-                    cur = conn.execute(
-                        "INSERT INTO usuarios (nome, email, senha_hash, criado_em) VALUES (?, ?, ?, ?)",
-                        (nome, email, generate_password_hash(senha), datetime.utcnow().isoformat())
-                    )
-                    usuario_id = cur.lastrowid
-                    conn.execute(
-                        "INSERT INTO progresso (usuario_id, atualizado_em) VALUES (?, ?)",
-                        (usuario_id, datetime.utcnow().isoformat())
-                    )
-                session.clear()
-                session["usuario_id"] = usuario_id
-                session["usuario_nome"] = nome
-                return redirect(url_for("painel"))
-            except sqlite3.IntegrityError:
-                flash("Esse e-mail já está cadastrado. Entre na sua conta.", "erro")
+            return render_template("auth.html", titulo="Criar conta", cadastro=True, erro="A senha precisa ter pelo menos 8 caracteres.")
+        
+        try:
+            with conectar() as conn:
+                cur = conn.execute(
+                    "INSERT INTO usuarios (nome, email, senha_hash, criado_em) VALUES (?, ?, ?, ?)",
+                    (nome, email, generate_password_hash(senha), datetime.utcnow().isoformat())
+                )
+                usuario_id = cur.lastrowid
+                conn.execute(
+                    "INSERT INTO progresso (usuario_id, atualizado_em) VALUES (?, ?)",
+                    (usuario_id, datetime.utcnow().isoformat())
+                )
+            session.clear()
+            session["usuario_id"] = usuario_id
+            session["usuario_nome"] = nome
+            return redirect(url_for("painel"))
+        except sqlite3.IntegrityError:
+            return render_template("auth.html", titulo="Criar conta", cadastro=True, erro="Esse e-mail já está cadastrado. Entre na sua conta.")
+            
     return render_template("auth.html", titulo="Criar conta", cadastro=True)
 
 @app.route("/entrar", methods=["GET", "POST"])
@@ -101,15 +104,18 @@ def entrar():
         senha = request.form.get("senha", "")
         with conectar() as conn:
             usuario = conn.execute("SELECT * FROM usuarios WHERE email = ?", (email,)).fetchone()
+        
         if usuario and check_password_hash(usuario["senha_hash"], senha):
             session.clear()
             session["usuario_id"] = usuario["id"]
             session["usuario_nome"] = usuario["nome"]
             return redirect(url_for("painel"))
-        flash("E-mail ou senha incorretos.", "erro")
+            
+        return render_template("auth.html", titulo="Entrar", cadastro=False, erro="E-mail ou senha incorretos.")
+        
     return render_template("auth.html", titulo="Entrar", cadastro=False)
 
-@app.route("/sair", methods=["POST"])
+@app.route("/sair", methods=["POST", "GET"])
 def sair():
     session.clear()
     return redirect(url_for("index"))
@@ -124,11 +130,9 @@ def painel():
         ).fetchone()
     return render_template("painel.html", progresso=progresso)
 
-# Rota principal do Jogo com as novas especificações dos Gladiadores
 @app.route("/jogo")
 @login_obrigatorio
 def jogo():
-    # Passamos as configurações padrão do Labirinto para a renderização do HTML
     config_jogo = {
         "qtd_gladiadores": 4,
         "limite_turnos": 20,
