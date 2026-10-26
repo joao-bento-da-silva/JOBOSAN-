@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }} — JOBOSAN Jogos{% endblock %}
+{% block content %}
+<section class="auth-card">
+  <a class="voltar" href="{{ url_for('index') }}">← Início</a>
+  <h1>{{ titulo }}</h1>
+  <p class="subtexto">{% if cadastro %}Crie uma conta para salvar sua pontuação e seu progresso.{% else %}Entre para continuar suas partidas.{% endif %}</p>
+  <form method="post" class="formulario">
+    {% if cadastro %}
+    <label>Nome
+      <input name="nome" autocomplete="name" minlength="2" maxlength="80" required>
+    </label>
+    {% endif %}
+    <label>E-mail
+      <input type="email" name="email" autocomplete="email" maxlength="254" required>
+    </label>
+    <label>Senha
+      <input type="password" name="senha" autocomplete="{% if cadastro %}new-password{% else %}current-password{% endif %}" minlength="{% if cadastro %}8{% else %}1{% endif %}" required>
+    </label>
+    <button class="botao primario largura" type="submit">{% if cadastro %}Criar conta{% else %}Entrar{% endif %}</button>
+  </form>
+  <p class="troca">{% if cadastro %}Já tem conta? <a href="{{ url_for('entrar') }}">Entrar</a>{% else %}Ainda não tem conta? <a href="{{ url_for('cadastro') }}">Cadastrar-se</a>{% endif %}</p>
+</section>
+{% endblock %}
