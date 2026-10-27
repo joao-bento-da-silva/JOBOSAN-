@@ -75,7 +75,7 @@ LAYOUT_GERAL = """
         header h1 { margin: 0; font-size: 1.5rem; color: #ffcc00; }
         nav a, nav button { color: #fff; background: #333; border: none; padding: 8px 15px; margin-left: 10px; border-radius: 4px; text-decoration: none; cursor: pointer; }
         nav a:hover, nav button:hover { background: #555; }
-        .container { flex: 1; max-width: 900px; margin: 20px auto; padding: 20px; background: #1e1e1e; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: 92%; }
+        .container { flex: 1; max-width: 950px; margin: 20px auto; padding: 20px; background: #1e1e1e; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: 92%; }
         .flashes { margin-bottom: 15px; }
         .flash { padding: 10px; border-radius: 4px; margin-bottom: 5px; font-size: 0.9rem; }
         .flash.erro { background: #800000; color: #fff; }
@@ -145,16 +145,20 @@ def index():
         return redirect(url_for("painel"))
     conteudo = """
     <div style="text-align: center; padding: 30px;">
-        <h2>O Xadrez Inverso de Valverde</h2>
-        <p>"Não é força que vence, mas sim a sabedoria de saber para onde ir."</p>
-        <p>A Corte Real enlouqueceu e os plebeus precisam encontrar a saída do labirinto!</p>
+        <h2>♟️ Fuga dos Plebeus — O Xadrez Inverso</h2>
+        <p style="font-style: italic; color: #ffcc00; margin: 15px 0;">"Não é força que vence, mas sim a sabedoria de saber para onde ir."</p>
+        <div style="background: #252525; padding: 20px; border-radius: 6px; text-align: left; margin: 20px 0; line-height: 1.6;">
+            <h3 style="color: #ffcc00; margin-top: 0;">📖 A História do Reino de Valverde</h3>
+            <p>Há muito tempo, no Reino de Valverde, o povo simples vivia em paz. Mas um dia, a Corte Real perdeu a razão. O Rei, a Rainha, os Bispos e os soldados decidiram que os plebeus já não tinham lugar no reino. Eles queriam tomar tudo para si.</p>
+            <p>Agora, o reino está fechado. As ruas viraram labirintos vigiados. Os soldados do Rei patrulham cada beco. E só existe uma única saída para a liberdade.</p>
+        </div>
         <div style="margin-top: 25px;">
-            <a href=""" + url_for('cadastro') + """ style="background: #5cb85c; color: #fff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px;">Criar Conta</a>
+            <a href=""" + url_for('cadastro') + """ style="background: #5cb85c; color: #fff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px;">Criar Conta e Jogar</a>
             <a href=""" + url_for('entrar') + """ style="background: #0275d8; color: #fff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Entrar</a>
         </div>
     </div>
     """
-    return render_template_string(LAYOUT_GERAL, title="Início — Fuga dos Plebeus", content=conteudo)
+    return render_template_string(LAYOUT_GERAL, title="Fuga dos Plebeus — Início", content=conteudo)
 
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
@@ -238,18 +242,37 @@ def painel():
 
     conteudo = f"""
     <div>
-        <h2>Painel do Jogador</h2>
+        <h2>Painel do Jogador — Reino de Valverde</h2>
         <div style="display: flex; gap: 15px; margin: 20px 0;">
             <div style="background: #252525; padding: 15px; border-radius: 5px; flex: 1;"><h3>Pontos</h3><p style="font-size: 1.5rem; color: #ffcc00;">{pontos}</p></div>
-            <div style="background: #252525; padding: 15px; border-radius: 5px; flex: 1;"><h3>Fases</h3><p style="font-size: 1.5rem; color: #5cb85c;">{fases} / 4</p></div>
+            <div style="background: #252525; padding: 15px; border-radius: 5px; flex: 1;"><h3>Fases Concluídas</h3><p style="font-size: 1.5rem; color: #5cb85c;">{fases} / 4</p></div>
             <div style="background: #252525; padding: 15px; border-radius: 5px; flex: 1;"><h3>Partidas</h3><p style="font-size: 1.5rem; color: #5bc0de;">{partidas}</p></div>
         </div>
-        <div style="text-align: center; margin-top: 30px;">
-            <a href="{url_for('jogo')}" style="background: #f0ad4e; color: #111; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-size: 1.2rem; font-weight: bold;">Iniciar Fuga ♟️</a>
+
+        <h3 style="margin-top: 30px; color: #ffcc00;">Estágios da Fuga</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; background: #252525; border-radius: 6px; overflow: hidden;">
+            <thead>
+                <tr style="background: #333; text-align: left;">
+                    <th style="padding: 10px;">Fase</th>
+                    <th style="padding: 10px;">Nome</th>
+                    <th style="padding: 10px;">Desafio</th>
+                    <th style="padding: 10px;">Pontuação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid #444;"><td style="padding: 10px;">1</td><td style="padding: 10px;">🌾 A Vila Fechada</td><td style="padding: 10px;">Labirinto pequeno, poucos guardas — aprenda a ler os caminhos</td><td style="padding: 10px; color: #ffcc00;">✅ 100 pontos</td></tr>
+                <tr style="border-bottom: 1px solid #444;"><td style="padding: 10px;">2</td><td style="padding: 10px;">🌲 A Floresta Cercada</td><td style="padding: 10px;">Mais paredes, mais soldados — a saída está bem escondida</td><td style="padding: 10px; color: #ffcc00;">✅ 250 pontos</td></tr>
+                <tr style="border-bottom: 1px solid #444;"><td style="padding: 10px;">3</td><td style="padding: 10px;">🏰 Os Muros do Reino</td><td style="padding: 10px;">Labirinto complexo, guardas em pontos estratégicos — calma e atenção</td><td style="padding: 10px; color: #ffcc00;">✅ 400 pontos</td></tr>
+                <tr><td style="padding: 10px;">4</td><td style="padding: 10px;">🌅 O Último Portão</td><td style="padding: 10px;">Todos os perseguidores te cercam, labirinto enorme, UMA saída apenas — consegue?</td><td style="padding: 10px; color: #ffcc00;">✅ 600 pts + Troféu</td></tr>
+            </tbody>
+        </table>
+
+        <div style="text-align: center; margin-top: 35px;">
+            <a href="{url_for('jogo')}" style="background: #f0ad4e; color: #111; padding: 15px 35px; text-decoration: none; border-radius: 6px; font-size: 1.2rem; font-weight: bold;">Iniciar Fuga ♟️</a>
         </div>
     </div>
     """
-    return render_template_string(LAYOUT_GERAL, title="Painel", content=conteudo)
+    return render_template_string(LAYOUT_GERAL, title="Painel do Jogador", content=conteudo)
 
 @app.route("/jogo")
 @login_obrigatorio
@@ -257,10 +280,10 @@ def jogo():
     conteudo = """
     <div class="jogo-layout">
         <aside class="painel-lateral">
-            <h3>Controle da Partida</h3>
-            <p><strong>Fase:</strong> <span id="fase">1</span> / 4</p>
-            <p><strong>Turnos:</strong> <span id="turnos">20</span></p>
-            <p><strong>Plebeus:</strong> <span id="plebeus">3</span></p>
+            <h3 id="titulo-fase-painel" style="color: #ffcc00; margin-top: 0;">Fase 1: A Vila Fechada</h3>
+            <p><strong>Turnos Restantes:</strong> <span id="turnos">20</span></p>
+            <p><strong>Plebeus Vivos:</strong> <span id="plebeus">3</span></p>
+            <p id="descricao-desafio" style="font-size: 0.85rem; color: #bbb; margin-top: 10px;">Labirinto pequeno, poucos guardas — aprenda a ler os caminhos</p>
             <button id="btn-reiniciar" class="btn-acao">Reiniciar Fase</button>
         </aside>
         <section class="area-tabuleiro">
@@ -273,84 +296,181 @@ def jogo():
             const tabuleiro = document.getElementById("tabuleiro");
             const statusMsg = document.getElementById("status-msg");
             const btnReiniciar = document.getElementById("btn-reiniciar");
+            const spanTurnos = document.getElementById("turnos");
+            const spanPlebeus = document.getElementById("plebeus");
+            const tituloFasePainel = document.getElementById("titulo-fase-painel");
+            const descDesafio = document.getElementById("descricao-desafio");
 
-            let peaoPos = { r: 7, c: 3 };
-            let reiPos = { r: 0, c: 4 };
-            let guardaPos = { r: 2, c: 2 };
-            let saidaPos = { r: 0, c: 7 };
+            let faseAtual = 1;
+            let turnos = 20;
             
-            let pecaSelecionada = false;
+            // Definição exata das 4 fases solicitadas
+            const dadosFases = {
+                1: { nome: "🌾 A Vila Fechada", desafio: "Labirinto pequeno, poucos guardas — aprenda a ler os caminhos", turnos: 20, saida: {r: 0, c: 7}, plebeusPos: [{r:7, c:2}, {r:7, c:3}, {r:7, c:4}], cortes: [{tipo: 'rei', r: 2, c: 4}, {tipo: 'bispo', r: 3, c: 2}] },
+                2: { nome: "🌲 A Floresta Cercada", desafio: "Mais paredes, mais soldados — a saída está bem escondida", turnos: 18, saida: {r: 0, c: 0}, plebeusPos: [{r:7, c:5}, {r:7, c:6}, {r:7, c:7}], cortes: [{tipo: 'rei', r: 2, c: 3}, {tipo: 'rainha', r: 4, c: 4}, {tipo: 'bispo', r: 2, c: 6}] },
+                3: { nome: "🏰 Os Muros do Reino", desafio: "Labirinto complexo, guardas em pontos estratégicos — calma e atenção", turnos: 15, saida: {r: 0, c: 3}, plebeusPos: [{r:7, c:1}, {r:7, c:2}, {r:7, c:3}, {r:7, c:4}], cortes: [{tipo: 'rei', r: 1, c: 3}, {tipo: 'rainha', r: 3, c: 5}, {tipo: 'bispo', r: 4, c: 1}, {tipo: 'bispo', r: 2, c: 6}] },
+                4: { nome: "🌅 O Último Portão", desafio: "Todos os perseguidores te cercam, labirinto enorme, UMA saída apenas — consegue?", turnos: 12, saida: {r: 0, c: 7}, plebeusPos: [{r:7, c:0}, {r:7, c:1}, {r:7, c:2}, {r:7, c:3}], cortes: [{tipo: 'rei', r: 1, c: 4}, {tipo: 'rainha', r: 3, c: 3}, {tipo: 'rainha', r: 5, c: 6}, {tipo: 'bispo', r: 2, c: 1}] }
+            };
+
+            let config = dadosFases[faseAtual];
+            let plebeus = JSON.parse(JSON.stringify(config.plebeusPos));
+            let cortes = JSON.parse(JSON.stringify(config.cortes));
+            let indiceSelecionado = null;
+
+            function atualizarPainel() {
+                tituloFasePainel.textContent = `Fase ${faseAtual}: ${config.nome}`;
+                descDesafio.textContent = config.desafio;
+                spanTurnos.textContent = turnos;
+                spanPlebeus.textContent = plebeus.length;
+            }
 
             function desenhar() {
                 tabuleiro.innerHTML = "";
+                atualizarPainel();
+
                 for (let r = 0; r < 8; r++) {
                     for (let c = 0; c < 8; c++) {
                         const casa = document.createElement("div");
                         casa.className = `casa ${(r + c) % 2 === 0 ? 'clara' : 'escura'}`;
                         
-                        if (r === peaoPos.r && c === peaoPos.c) {
-                            casa.innerHTML = "🛡️";
-                            if (pecaSelecionada) casa.style.border = "3px solid #ffcc00";
-                        } else if (r === reiPos.r && c === reiPos.c) {
-                            casa.innerHTML = "👑";
-                        } else if (r === guardaPos.r && c === guardaPos.c) {
-                            casa.innerHTML = "🗡️";
-                        } else if (r === saidaPos.r && c === saidaPos.c) {
+                        // Saída
+                        if (r === config.saida.r && c === config.saida.c) {
                             casa.innerHTML = "🚪";
                         }
 
-                        let currentRow = r;
-                        let currentCol = c;
-                        casa.addEventListener("click", () => cliqueCasa(currentRow, currentCol));
+                        // Plebeus
+                        plebeus.forEach((p, idx) => {
+                            if (p.r === r && p.c === c) {
+                                casa.innerHTML = "🛡️";
+                                if (indiceSelecionado === idx) {
+                                    casa.style.border = "3px solid #ffcc00";
+                                    casa.style.backgroundColor = "#444";
+                                }
+                            }
+                        });
+
+                        // Peças da Corte
+                        cortes.forEach(cp => {
+                            if (cp.r === r && cp.c === c) {
+                                if (cp.tipo === 'rei') casa.innerHTML = "👑";
+                                else if (cp.tipo === 'rainha') casa.innerHTML = "♕";
+                                else if (cp.tipo === 'bispo') casa.innerHTML = "♗";
+                            }
+                        });
+
+                        let cr = r, cc = c;
+                        casa.addEventListener("click", () => lidarClique(cr, cc));
                         tabuleiro.appendChild(casa);
                     }
                 }
             }
 
-            function cliqueCasa(r, c) {
-                if (r === peaoPos.r && c === peaoPos.c) {
-                    pecaSelecionada = true;
-                    statusMsg.textContent = "Plebeu selecionado! Toque em uma casa vazia ao lado para mover.";
+            function lidarClique(r, c) {
+                let clicadoIdx = plebeus.findIndex(p => p.r === r && p.c === c);
+                if (clicadoIdx !== -1) {
+                    indiceSelecionado = clicadoIdx;
+                    statusMsg.textContent = `Plebeu selecionado! Toque em uma casa vizinha para mover.`;
                     desenhar();
                     return;
                 }
 
-                if (pecaSelecionada) {
-                    let diffR = Math.abs(r - peaoPos.r);
-                    let diffC = Math.abs(c - peaoPos.c);
+                if (indiceSelecionado !== null) {
+                    let p = plebeus[indiceSelecionado];
+                    let diffR = Math.abs(r - p.r);
+                    let diffC = Math.abs(c - p.c);
 
                     if ((diffR + diffC) === 1) {
-                        peaoPos = { r, c };
-                        pecaSelecionada = false;
-                        statusMsg.textContent = "Movimento realizado com sucesso!";
+                        p.r = r;
+                        p.c = c;
+                        indiceSelecionado = null;
+                        turnos--;
 
-                        if (peaoPos.r === saidaPos.r && peaoPos.c === saidaPos.c) {
-                            statusMsg.textContent = "🎉 Vitória! Você escapou da Corte!";
-                            alert("Parabéns! Você venceu a fase!");
-                        } else {
-                            if (guardaPos.r < peaoPos.r) guardaPos.r++;
-                            else if (guardaPos.r > peaoPos.r) guardaPos.r--;
+                        // Checar se alcançou a saída
+                        if (r === config.saida.r && c === config.saida.c) {
+                            statusMsg.textContent = "✨ Um plebeu escapou para a liberdade!";
+                            plebeus.splice(indiceSelecionado !== null ? indiceSelecionado : 0, 1);
                         }
+
+                        // Corte persegue
+                        moverCorte();
+                        verificarCaptura();
+
+                        if (plebeus.length === 0) {
+                            alert(`🎉 Vitória na fase ${faseAtual} (${config.nome})!`);
+                            avancarFase();
+                            return;
+                        }
+
+                        if (turnos <= 0) {
+                            alert("❌ O tempo esgotou! A Corte cercou os plebeus. Reiniciando fase.");
+                            reiniciarFase();
+                            return;
+                        }
+
                         desenhar();
                     } else {
-                        statusMsg.textContent = "⚠️ Movimento inválido! Escolha uma casa adjacente.";
-                        pecaSelecionada = false;
-                        desenhar();
+                        statusMsg.textContent = "⚠️ Movimento inválido! Mova apenas 1 casa adjacente.";
                     }
                 } else {
-                    statusMsg.textContent = "⚠️ Toque primeiro no seu plebeu (🛡️).";
+                    statusMsg.textContent = "⚠️ Selecione um plebeu (🛡️) primeiro.";
                 }
             }
 
-            btnReiniciar.addEventListener("click", () => {
-                peaoPos = { r: 7, c: 3 };
-                guardaPos = { r: 2, c: 2 };
-                pecaSelecionada = false;
-                statusMsg.textContent = "Fase reiniciada! Toque no seu plebeu (🛡️).";
-                desenhar();
-            });
+            function moverCorte() {
+                cortes.forEach(cp => {
+                    if (plebeus.length === 0) return;
+                    let alvo = plebeus[0];
+                    let minDist = 999;
+                    plebeus.forEach(p => {
+                        let dist = Math.abs(p.r - cp.r) + Math.abs(p.c - cp.c);
+                        if (dist < minDist) { minDist = dist; alvo = p; }
+                    });
 
-            desenhar();
+                    if (cp.r < alvo.r) cp.r++;
+                    else if (cp.r > alvo.r) cp.r--;
+                    if (cp.c < alvo.c) cp.c++;
+                    else if (cp.c > alvo.c) cp.c--;
+                });
+            }
+
+            function verificarCaptura() {
+                plebeus = plebeus.filter(p => {
+                    let pego = cortes.some(cp => cp.r === p.r && cp.c === p.c);
+                    if (pego) {
+                        statusMsg.textContent = "⚔️ Um plebeu foi capturado pela Corte!";
+                    }
+                    return !pego;
+                });
+
+                if (plebeus.length === 0) {
+                    alert("⚔️ Todos os plebeus foram capturados!");
+                    reiniciarFase();
+                }
+            }
+
+            function avancarFase() {
+                if (faseAtual < 4) {
+                    faseAtual++;
+                    reiniciarFase();
+                } else {
+                    alert("🏆 Parabéns supremo! Você conquistou o Troféu Liberdade em O Último Portão!");
+                    faseAtual = 1;
+                    reiniciarFase();
+                }
+            }
+
+            function reiniciarFase() {
+                config = dadosFases[faseAtual];
+                turnos = config.turnos;
+                plebeus = JSON.parse(JSON.stringify(config.plebeusPos));
+                cortes = JSON.parse(JSON.stringify(config.cortes));
+                indiceSelecionado = null;
+                statusMsg.textContent = `Fase ${faseAtual} (${config.nome}) iniciada!`;
+                desenhar();
+            }
+
+            btnReiniciar.addEventListener("click", reiniciarFase);
+            reiniciarFase();
         });
     </script>
     """
