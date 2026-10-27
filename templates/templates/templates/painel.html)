@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Painel do Jogador — Fuga dos Plebeus{% endblock %}
+
+{% block content %}
+<section class="painel-container">
+    <h2>Seu Desempenho no Reino de Valverde</h2>
+
+    <div class="cards-progresso">
+        <div class="card-status">
+            <h3>🏆 Pontuação Total</h3>
+            <p class="valor">{{ progresso['pontos'] if progresso else 0 }} pts</p>
+        </div>
+
+        <div class="card-status">
+            <h3>🚩 Fases Concluídas</h3>
+            <p class="valor">{{ progresso['fases_concluidas'] if progresso else 0 }} / 4</p>
+        </div>
+
+        <div class="card-status">
+            <h3>⚔️ Partidas Jogadas</h3>
+            <p class="valor">{{ progresso['partidas'] if progresso else 0 }}</p>
+        </div>
+    </div>
+
+    <div class="tabela-fases">
+        <h3>Estágios da Fuga</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Fase</th>
+                    <th>Nome</th>
+                    <th>Desafio</th>
+                    <th>Recompensa</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>🌾 A Vila Fechada</td>
+                    <td>Labirinto pequeno, poucos guardas — aprenda a ler os caminhos</td>
+                    <td>100 pontos</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>🌲 A Floresta Cercada</td>
+                    <td>Mais paredes, mais soldados — a saída está bem escondida</td>
+                    <td>150 pontos</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>🏰 Os Muros do Reino</td>
+                    <td>Labirinto complexo, guardas em pontos estratégicos</td>
+                    <td>200 pontos</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>🌅 O Último Portão</td>
+                    <td>Perseguidores te cercam, labirinto enorme, UMA saída apenas</td>
+                    <td>300 pontos + Troféu Liberdade</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="area-acao">
+        <a href="{{ url_for('jogo') }}" class="btn-jogar-grande">Iniciar Fuga ♟️</a>
+    </div>
+</section>
+{% endblock %}
