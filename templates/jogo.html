@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Tabuleiro — Fuga dos Plebeus{% endblock %}
+
+{% block content %}
+<div class="jogo-layout">
+    <!-- Painel Lateral: Informações do Turno e Fase -->
+    <aside class="painel-lateral">
+        <div class="status-box">
+            <h3>Status da Partida</h3>
+            <p><strong>Fase Atual:</strong> <span id="fase-atual">1</span> / 4</p>
+            <p><strong>Turnos Restantes:</strong> <span id="turnos-restantes">{{ config.limite_turnos }}</span></p>
+            <p><strong>Plebeus Restantes:</strong> <span id="plebeus-restantes">3</span></p>
+            <p><strong>Pontos da Partida:</strong> <span id="pontos-acumulados">0</span></p>
+        </div>
+
+        <div class="regras-box">
+            <h4>Petição de Movimentos</h4>
+            <ul>
+                <li><strong>Plebeus:</strong> Ortogonal (uma casa por vez).</li>
+                <li><strong>Rei:</strong> Uma casa (qualquer direção).</li>
+                <li><strong>Rainha:</strong> Linhas retas e diagonais.</li>
+                <li><strong>Bispo:</strong> Apenas diagonais.</li>
+            </ul>
+        </div>
+
+        <button id="btn-reiniciar" class="btn-secundario">Reiniciar Fase</button>
+    </aside>
+
+    <!-- Área Central: O Tabuleiro -->
+    <section class="area-tabuleiro">
+        <div id="mensagem-status" class="status-alerta">Selecione um plebeu para mover!</div>
+        
+        <div id="tabuleiro" class="tabuleiro-xadrez">
+            <!-- O tabuleiro 8x8 é gerado dinamicamente via JavaScript (game.js) -->
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Injeção de configurações dinâmicas vindas do app.py
+    window.GAME_CONFIG = {{ config | tojson }};
+    window.REGRAS = {{ regras | tojson }};
+    window.FASES = {{ fases | tojson }};
+</script>
+<script src="{{ url_for('static', filename='game.js') }}"></script>
+{% endblock %}
