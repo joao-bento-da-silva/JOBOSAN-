@@ -62,12 +62,15 @@ def login_obrigatorio(fn):
         return fn(*args, **kwargs)
     return wrapper
 
+# LAYOUT COM METADADOS PARA O GOOGLE E ASSINATURA DE AUTORIA JUDICIAL
 LAYOUT_GERAL = """
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fuga dos Plebeus - O Xadrez Inverso. Um jogo estratégico criado por João Bento da Silva (JOBOSAN Jogos).">
+    <meta name="author" content="João Bento da Silva">
     <title>{{ title }}</title>
     <style>
         body { font-family: Arial, sans-serif; background: #121212; color: #f0f0f0; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
@@ -76,6 +79,7 @@ LAYOUT_GERAL = """
         nav a, nav button { color: #fff; background: #333; border: none; padding: 8px 15px; margin-left: 10px; border-radius: 4px; text-decoration: none; cursor: pointer; }
         nav a:hover, nav button:hover { background: #555; }
         .container { flex: 1; max-width: 950px; margin: 20px auto; padding: 20px; background: #1e1e1e; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: 92%; }
+        footer { text-align: center; padding: 15px; background: #1a1a1a; color: #888; font-size: 0.85rem; border-top: 1px solid #333; }
         .flashes { margin-bottom: 15px; }
         .flash { padding: 10px; border-radius: 4px; margin-bottom: 5px; font-size: 0.9rem; }
         .flash.erro { background: #800000; color: #fff; }
@@ -122,7 +126,7 @@ LAYOUT_GERAL = """
         </nav>
     </header>
 
-    <div class="container">
+    <main class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="flashes">
@@ -134,7 +138,11 @@ LAYOUT_GERAL = """
         {% endwith %}
 
         {{ content | safe }}
-    </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 JOBOSAN Jogos — Criado e Desenvolvido por <strong>João Bento da Silva</strong>. Todos os direitos reservados.</p>
+    </footer>
 </body>
 </html>
 """
@@ -158,7 +166,7 @@ def index():
         </div>
     </div>
     """
-    return render_template_string(LAYOUT_GERAL, title="Fuga dos Plebeus — Início", content=conteudo)
+    return render_template_string(LAYOUT_GERAL, title="Fuga dos Plebeus — JOBOSAN Jogos", content=conteudo)
 
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
@@ -196,7 +204,7 @@ def cadastro():
         <div class="auth-footer"><p>Já tem conta? <a href=""" + url_for('entrar') + """>Entrar</a></p></div>
     </div>
     """
-    return render_template_string(LAYOUT_GERAL, title="Cadastro", content=conteudo)
+    return render_template_string(LAYOUT_GERAL, title="Cadastro — JOBOSAN", content=conteudo)
 
 @app.route("/entrar", methods=["GET", "POST"])
 def entrar():
@@ -223,7 +231,7 @@ def entrar():
         <div class="auth-footer"><p>Não tem conta? <a href=""" + url_for('cadastro') + """>Cadastre-se</a></p></div>
     </div>
     """
-    return render_template_string(LAYOUT_GERAL, title="Entrar", content=conteudo)
+    return render_template_string(LAYOUT_GERAL, title="Entrar — JOBOSAN", content=conteudo)
 
 @app.route("/sair", methods=["POST"])
 def sair():
@@ -272,7 +280,7 @@ def painel():
         </div>
     </div>
     """
-    return render_template_string(LAYOUT_GERAL, title="Painel do Jogador", content=conteudo)
+    return render_template_string(LAYOUT_GERAL, title="Painel do Jogador — JOBOSAN", content=conteudo)
 
 @app.route("/jogo")
 @login_obrigatorio
@@ -304,7 +312,6 @@ def jogo():
             let faseAtual = 1;
             let turnos = 20;
             
-            // Definição exata das 4 fases solicitadas
             const dadosFases = {
                 1: { nome: "🌾 A Vila Fechada", desafio: "Labirinto pequeno, poucos guardas — aprenda a ler os caminhos", turnos: 20, saida: {r: 0, c: 7}, plebeusPos: [{r:7, c:2}, {r:7, c:3}, {r:7, c:4}], cortes: [{tipo: 'rei', r: 2, c: 4}, {tipo: 'bispo', r: 3, c: 2}] },
                 2: { nome: "🌲 A Floresta Cercada", desafio: "Mais paredes, mais soldados — a saída está bem escondida", turnos: 18, saida: {r: 0, c: 0}, plebeusPos: [{r:7, c:5}, {r:7, c:6}, {r:7, c:7}], cortes: [{tipo: 'rei', r: 2, c: 3}, {tipo: 'rainha', r: 4, c: 4}, {tipo: 'bispo', r: 2, c: 6}] },
@@ -333,12 +340,10 @@ def jogo():
                         const casa = document.createElement("div");
                         casa.className = `casa ${(r + c) % 2 === 0 ? 'clara' : 'escura'}`;
                         
-                        // Saída
                         if (r === config.saida.r && c === config.saida.c) {
                             casa.innerHTML = "🚪";
                         }
 
-                        // Plebeus
                         plebeus.forEach((p, idx) => {
                             if (p.r === r && p.c === c) {
                                 casa.innerHTML = "🛡️";
@@ -349,7 +354,6 @@ def jogo():
                             }
                         });
 
-                        // Peças da Corte
                         cortes.forEach(cp => {
                             if (cp.r === r && cp.c === c) {
                                 if (cp.tipo === 'rei') casa.innerHTML = "👑";
@@ -385,13 +389,11 @@ def jogo():
                         indiceSelecionado = null;
                         turnos--;
 
-                        // Checar se alcançou a saída
                         if (r === config.saida.r && c === config.saida.c) {
                             statusMsg.textContent = "✨ Um plebeu escapou para a liberdade!";
                             plebeus.splice(indiceSelecionado !== null ? indiceSelecionado : 0, 1);
                         }
 
-                        // Corte persegue
                         moverCorte();
                         verificarCaptura();
 
