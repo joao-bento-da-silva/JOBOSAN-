@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Início — Fuga dos Plebeus{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h2>Fuga dos Plebeus — O Xadrez Inverso</h2>
+    <p class="lema">"Não é força que vence, mas sim a sabedoria de saber para onde ir."</p>
+    
+    <div class="card-historia">
+        <h3>A História de Valverde</h3>
+        <p>
+            Há muito tempo, no Reino de Valverde, o povo simples vivia em paz. 
+            Mas a Corte Real perdeu a razão. O Rei, a Rainha, os Bispos e os soldados 
+            decidiram que os plebeus já não tinham lugar no reino.
+        </p>
+        <p>
+            Agora, o reino está fechado, as ruas viraram labirintos vigiados e 
+            os soldados patrulham os becos. Só existe uma saída para a liberdade.
+        </p>
+    </div>
+
+    <div class="acoes-inicio">
+        <a href="{{ url_for('cadastro') }}" class="btn-principal">Começar a Jogar</a>
+        <a href="{{ url_for('entrar') }}" class="btn-secundario">Já tenho conta</a>
+    </div>
+</section>
+{% endblock %}
