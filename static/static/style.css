@@ -1,0 +1,115 @@
+.jogo-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.painel-lateral {
+    flex: 1 1 250px;
+}
+
+.status-box, .regras-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 4px solid #28a745;
+}
+
+.area-tabuleiro {
+    flex: 2 1 500px;
+}
+
+.status-alerta {
+    background: #fff3cd;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.tabuleiro-xadrez {
+    display: inline-block;
+    border: 4px solid #8B4513;
+    background: #DEB887;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.linha-tabuleiro {
+    display: flex;
+}
+
+.celula {
+    width: 50px;
+    height: 50px;
+    border: 1px solid #8B4513;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #F0D9B5;
+}
+
+.celula:nth-child(even) {
+    background: #D2B48C;
+}
+
+.celula:hover {
+    background: #f5e2c8;
+}
+
+.celula.selecionado {
+    background: #90EE90 !important;
+    box-shadow: inset 0 0 10px #00;
+}
+
+.celula.parede {
+    background: #654321;
+    cursor: not-allowed;
+}
+
+.celula.saida {
+    background: #90EE90;
+    animation: brilho 1s infinite alternate;
+}
+
+.celula.soldado {
+    background: #ffcccc;
+}
+
+.celula.perseguidor {
+    background: #ff66666;
+}
+
+.celula.plebeu {
+    background: #ffffcc;
+}
+
+.icone {
+    font-size: 24px;
+}
+
+@keyframes brilho {
+    from { box-shadow: inset 0 0 5px #00aa00; }
+    to { box-shadow: inset 0 0 15px #00ff00; }
+}
+
+.btn-secundario {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn-secundario:hover {
+    background: #5a6268;
+}
