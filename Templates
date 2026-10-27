@@ -1,1 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Fuga dos Plebeus{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <h1>🏰 Fuga dos Plebeus</h1>
+        </div>
+        <nav>
+            {% if session.get('usuario_id') %}
+                <span>Olá, <strong>{{ session.get('usuario_nome') }}</strong></span>
+                <a href="{{ url_for('painel') }}">Painel</a>
+                <a href="{{ url_for('jogo') }}">Jogar</a>
+                <form action="{{ url_for('sair') }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn-sair">Sair</button>
+                </form>
+            {% else %}
+                <a href="{{ url_for('entrar') }}">Entrar</a>
+                <a href="{{ url_for('cadastro') }}" class="btn-destaque">Criar Conta</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flashes">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; JOBOSAN Jogos - Reino de Valverde. Todos os direitos reservados.</p>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
 
