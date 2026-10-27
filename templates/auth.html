@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} — Fuga dos Plebeus{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>{{ titulo }}</h2>
+
+    <form method="POST" class="form-auth">
+        {% if cadastro %}
+            <div class="campo">
+                <label for="nome">Nome Completo</label>
+                <input type="text" id="nome" name="nome" placeholder="Seu nome ou apelido" required minlength="2">
+            </div>
+        {% endif %}
+
+        <div class="campo">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="seuemail@exemplo.com" required>
+        </div>
+
+        <div class="campo">
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" name="senha" placeholder="••••••••" required minlength="8">
+        </div>
+
+        <button type="submit" class="btn-submit">
+            {% if cadastro %}Criar Minha Conta{% else %}Entrar no Jogo{% endif %}
+        </button>
+    </form>
+
+    <div class="auth-footer">
+        {% if cadastro %}
+            <p>Já tem uma conta? <a href="{{ url_for('entrar') }}">Faça login aqui</a></p>
+        {% else %}
+            <p>Ainda não tem conta? <a href="{{ url_for('cadastro') }}">Cadastre-se gratuitamente</a></p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
