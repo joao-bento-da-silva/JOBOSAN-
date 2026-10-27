@@ -1,4 +1,4 @@
-import os
+ import os
 import sqlite3
 import secrets
 from functools import wraps
@@ -62,7 +62,6 @@ def login_obrigatorio(fn):
         return fn(*args, **kwargs)
     return wrapper
 
-# LAYOUT COMPLETO COM ESTILO E TABULEIRO FUNCIONAL EMBUTIDOS
 LAYOUT_GERAL = """
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -82,7 +81,6 @@ LAYOUT_GERAL = """
         .flash.erro { background: #800000; color: #fff; }
         .flash.sucesso { background: #006600; color: #fff; }
         
-        /* Estilos do Jogo / Tabuleiro */
         .jogo-layout { display: flex; flex-direction: column; gap: 20px; }
         @media(min-width: 768px) { .jogo-layout { flex-direction: row; } }
         .painel-lateral { flex: 1; background: #252525; padding: 15px; border-radius: 6px; }
@@ -96,7 +94,6 @@ LAYOUT_GERAL = """
         .btn-acao { background: #d9534f; color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 15px; }
         .btn-acao:hover { background: #c9302c; }
         
-        /* Autenticação */
         .auth-container { max-width: 400px; margin: 40px auto; }
         .campo { margin-bottom: 15px; }
         .campo label { display: block; margin-bottom: 5px; color: #ccc; }
@@ -267,7 +264,7 @@ def jogo():
             <button id="btn-reiniciar" class="btn-acao">Reiniciar Fase</button>
         </aside>
         <section class="area-tabuleiro">
-            <div id="status-msg" class="status-alerta">Selecione um plebeu para começar a fuga!</div>
+            <div id="status-msg" class="status-alerta">Toque no seu plebeu (🛡️) para selecioná-lo!</div>
             <div id="tabuleiro" class="tabuleiro-xadrez"></div>
         </section>
     </div>
@@ -281,6 +278,8 @@ def jogo():
             let reiPos = { r: 0, c: 4 };
             let guardaPos = { r: 2, c: 2 };
             let saidaPos = { r: 0, c: 7 };
+            
+            let pecaSelecionada = false;
 
             function desenhar() {
                 tabuleiro.innerHTML = "";
@@ -290,49 +289,64 @@ def jogo():
                         casa.className = `casa ${(r + c) % 2 === 0 ? 'clara' : 'escura'}`;
                         
                         if (r === peaoPos.r && c === peaoPos.c) {
-                            casa.innerHTML = "🛡️"; // Plebeu
+                            casa.innerHTML = "🛡️";
+                            if (pecaSelecionada) casa.style.border = "3px solid #ffcc00";
                         } else if (r === reiPos.r && c === reiPos.c) {
-                            casa.innerHTML = "👑"; // Rei
+                            casa.innerHTML = "👑";
                         } else if (r === guardaPos.r && c === guardaPos.c) {
-                            casa.innerHTML = "🗡️"; // Guarda
+                            casa.innerHTML = "🗡️";
                         } else if (r === saidaPos.r && c === saidaPos.c) {
-                            casa.innerHTML = "🚪"; // Saída
+                            casa.innerHTML = "🚪";
                         }
 
-                        casa.addEventListener("click", () => moverPlebeu(r, c));
+                        let currentRow = r;
+                        let currentCol = c;
+                        casa.addEventListener("click", () => cliqueCasa(currentRow, currentCol));
                         tabuleiro.appendChild(casa);
                     }
                 }
             }
 
-            function moverPlebeu(r, c) {
-                // Movimento ortogonal simples de 1 casa
-                let diffR = Math.abs(r - peaoPos.r);
-                let diffC = Math.abs(c - peaoPos.c);
-
-                if ((diffR + diffC) === 1) {
-                    peaoPos = { r, c };
-                    statusMsg.textContent = "Plebeu movido com sucesso!";
-                    
-                    // Checar vitória
-                    if (peaoPos.r === saidaPos.r && peaoPos.c === saidaPos.c) {
-                        statusMsg.textContent = "🎉 Vitória! Você escapou da Corte!";
-                        alert("Parabéns! Você concluiu a fuga com sucesso!");
-                    } else {
-                        // Resposta simples da guarda perseguindo
-                        if (guardaPos.r < peaoPos.r) guardaPos.r++;
-                        else if (guardaPos.r > peaoPos.r) guardaPos.r--;
-                    }
+            function cliqueCasa(r, c) {
+                if (r === peaoPos.r && c === peaoPos.c) {
+                    pecaSelecionada = true;
+                    statusMsg.textContent = "Plebeu selecionado! Toque em uma casa vazia ao lado para mover.";
                     desenhar();
+                    return;
+                }
+
+                if (pecaSelecionada) {
+                    let diffR = Math.abs(r - peaoPos.r);
+                    let diffC = Math.abs(c - peaoPos.c);
+
+                    if ((diffR + diffC) === 1) {
+                        peaoPos = { r, c };
+                        pecaSelecionada = false;
+                        statusMsg.textContent = "Movimento realizado com sucesso!";
+
+                        if (peaoPos.r === saidaPos.r && peaoPos.c === saidaPos.c) {
+                            statusMsg.textContent = "🎉 Vitória! Você escapou da Corte!";
+                            alert("Parabéns! Você venceu a fase!");
+                        } else {
+                            if (guardaPos.r < peaoPos.r) guardaPos.r++;
+                            else if (guardaPos.r > peaoPos.r) guardaPos.r--;
+                        }
+                        desenhar();
+                    } else {
+                        statusMsg.textContent = "⚠️ Movimento inválido! Escolha uma casa adjacente.";
+                        pecaSelecionada = false;
+                        desenhar();
+                    }
                 } else {
-                    statusMsg.textContent = "Movimento inválido! Mova apenas 1 casa adjacente.";
+                    statusMsg.textContent = "⚠️ Toque primeiro no seu plebeu (🛡️).";
                 }
             }
 
             btnReiniciar.addEventListener("click", () => {
                 peaoPos = { r: 7, c: 3 };
                 guardaPos = { r: 2, c: 2 };
-                statusMsg.textContent = "Fase reiniciada! Selecione uma casa ao lado do plebeu.";
+                pecaSelecionada = false;
+                statusMsg.textContent = "Fase reiniciada! Toque no seu plebeu (🛡️).";
                 desenhar();
             });
 
