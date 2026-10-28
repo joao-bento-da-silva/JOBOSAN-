@@ -3,6 +3,7 @@ import sqlite3
 import secrets
 from functools import wraps
 from datetime import datetime, timezone
+from flask import Flask, Response
 from flask import (
     Flask, render_template_string, request, redirect,
     url_for, session, flash, jsonify
@@ -18,6 +19,35 @@ DATABASE_PATH = os.environ.get(
     "DATABASE_PATH",
     os.path.join(os.path.dirname(__file__), "jobosan_jogos.db")
 )
+@app.route('/google510f4f340be76af9.html')
+def google_verification():
+    return "google-site-verification: google510f4f340be76af9.html"
+
+@app.route('/robots.txt')
+def robots():
+    content = """User-agent: *
+Allow: /
+Sitemap: https://jobosan.onrender.com/sitemap.xml
+"""
+    return Response(content, mimetype='text/plain')
+
+@app.route('/sitemap.xml')
+def sitemap():
+    xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://jobosan.onrender.com/</loc>
+    <priority>1.0</priority>
+  </url>
+</urlset>
+"""
+    return Response(xml_content, mimetype='application/xml')
+
+# =======================================================
+
+def agora():
+    return datetime.now(timezone.utc).isoformat()
+
 
 def agora():
     return datetime.now(timezone.utc).isoformat()
