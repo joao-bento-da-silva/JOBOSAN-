@@ -297,7 +297,7 @@ def painel():
     fases = prog["fases_concluidas"] if prog else 0
     partidas = prog["partidas"] if prog else 0
 
-    conteudo = f"""
+         conteudo = f"""
     <div>
         <h2>Painel do Jogador — Reino de Valverde</h2>
         <div style="display: flex; gap: 15px; margin: 20px 0; flex-wrap: wrap;">
@@ -307,8 +307,12 @@ def painel():
         </div>
 
         <h3 style="margin-top: 30px; color: #ffcc00;">Estágios da Fuga</h3>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; background: #25
-        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; background: #252525;">
+            <!-- Conteúdo da tabela ou fechamento adequado aqui -->
+        </table>
+    </div>
+    """
+
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
