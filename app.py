@@ -330,7 +330,7 @@ def jogo():
                     <li><strong>Rei:</strong> Persegue 1 casa por vez em qualquer direção.</li>
                     <li><strong>Rainha:</strong> Persegue em linha reta ou diagonal, uma casa por turno.</li>
                     <li><strong>Bispo:</strong> Apenas na diagonal - se não estiver na diagonal, não se move!</li>
-                    <li><strong>🚪 Saída:</strong> Leve todos os plebeus até a saída para vencer!</li>
+                    <li><strong>Saída:</strong> Leve todos os plebeus até a saída para vencer!</li>
                 </ul>
             </div>
 
