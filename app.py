@@ -365,19 +365,20 @@ def jogo():
   cortes: [{tipo: 'rei', r: 2, c: 1}, {tipo: 'rainha', r: 4, c: 2}, {tipo: 'bispo', r: 5, c: 6}, {tipo: 'bispo', r: 1, c: 6}] 
 },
 
-                 4: { 
-  nome: "🌅 O Último Portão", 
-  desafio: "Todos os perseguidores te cercam, labirinto enorme, UMA saída apenas — consegue?", 
-  turnos: 12, 
-  saida: {r: 0, c: 7}, 
-  plebeusPos: [{r:7, c:0}, {r:7, c:1}, {r:7, c:2}, {r:7, c:3}], 
-  cortes: [
-    {tipo: 'rei', r: 2, c: 5}, 
-    {tipo: 'rainha', r: 4, c: 2}, 
-    {tipo: 'rainha', r: 5, c: 5}, 
-    {tipo: 'bispo', r: 1, c: 2}
-  ] 
-}
+                    4: { 
+    nome: "🌅 O Último Portão", 
+    desafio: "Todos os perseguidores te cercam, labirinto enorme, UMA saída apenas — consegue?", 
+    turnos: 12, 
+    saida: {r: 0, c: 7}, 
+    plebeusPos: [{r:7, c:0}, {r:7, c:1}, {r:7, c:2}, {r:7, c:3}], 
+    cortes: [
+      {tipo: 'rei', r: 2, c: 5}, 
+      {tipo: 'rainha', r: 4, c: 2}, 
+      {tipo: 'rainha', r: 5, c: 5}, 
+      {tipo: 'bispo', r: 1, c: 2}
+    ] 
+  }
+
 
 
             let config = dadosFases[faseAtual];
