@@ -309,6 +309,80 @@ def painel():
         <h3 style="margin-top: 30px; color: #ffcc00;">Estágios da Fuga</h3>
         <table style="width: 100%; border-collapse: collapse; margin-top: 10px; background: #25
         
+ @app.route("/jogo")
+@login_obrigatorio
+def jogo():
+    return render_template_string(LAYOUT_GERAL, title="Jogo — Fuga dos Plebeus", content="""
+    <div class="jogo-layout">
+        <aside class="painel-lateral">
+            <div class="status-box">
+                <h3>Status da Partida</h3>
+                <p><strong>Fase Atual:</strong> <span id="fase-atual">1</span> / 4</p>
+                <p><strong>Turnos Restantes:</strong> <span id="turnos-restantes">20</span></p>
+                <p><strong>Plebeus Restantes:</strong> <span id="plebeus-restantes">3</span></p>
+                <p><strong>Pontos da Partida:</strong> <span id="pontos-acumulados">0</span></p>
+            </div>
+
+            <div class="regras-box">
+                <h4>Regras de Movimento</h4>
+                <ul>
+                    <li><strong>Plebeus:</strong> Clica para selecionar, depois clica em uma casa ao lado para mover.</li>
+                    <li><strong>Rei:</strong> Persegue 1 casa por vez em qualquer direção.</li>
+                    <li><strong>Rainha:</strong> Persegue em linha reta ou diagonal, uma casa por turno.</li>
+                    <li><strong>Bispo:</strong> Apenas na diagonal — se não estiver na diagonal, não se move!</li>
+                    <li><strong>🚪 Saída:</strong> Leve todos os plebeus até a saída para vencer!</li>
+                </ul>
+            </div>
+
+            <button id="btn-reiniciar" class="btn-acao">Reiniciar Fase</button>
+        </aside>
+
+        <section class="area-tabuleiro">
+            <h2>Fuga dos Plebeus</h2>
+            <div id="mensagem-status" class="status-alerta">Selecione um plebeu para mover!</div>
+            <div id="tabuleiro" class="tabuleiro-xadrez"></div>
+        </section>
+    </div>
+
+    <script>
+        window.GAME_CONFIG = {{ config | tojson }};
+        window.REGRAS = {{ regras | tojson }};
+        window.FASES = {{ fases | tojson }};
+    </script>
+    <script src="/static/game.js"></script>
+    """,
+        config={
+            "titulo": "Fuga dos Plebeus",
+            "limite_turnos": 20,
+        },
+        regras={},
+        fases={}
+    )
+
+
+@app.route("/api/resultado", methods=["POST"])
+@login_obrigatorio
+def resultado():
+    dados = request.get_json(silent=True) or {}
+    try:
+        pontos = int(dados.get("pontos", 0))
+        fases_concluidas = int(dados.get("fases_concluidas", 0))
+    except (TypeError, ValueError):
+        return jsonify(ok=False, erro="Dados inválidos."), 400
+
+    with conectar() as conn:
+        conn.execute("""
+            UPDATE progresso
+            SET pontos = pontos + ?,
+                fases_concluidas = MAX(fases_concluidas, ?),
+                partidas = partidas + 1,
+                atualizado_em = ?
+            WHERE usuario_id = ?
+        """, (pontos, fases_concluidas, datetime.now(timezone.utc).isoformat(), session["usuario_id"]))
+    
+    return jsonify(ok=True)
+
+
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
