@@ -1,28 +1,36 @@
- function moverPerseguidores() {
-    // Lista para processar cada perseguidor apenas UMA vez por turno
-    const perseguidores = [];
+ 
+function moverPerseguidores() {
+    const listaPerseguidores = [];
 
+    // Identifica cada perseguidor no tabuleiro.
     for (let y = 0; y < TAMANHO_TABULEIRO; y++) {
         for (let x = 0; x < TAMANHO_TABULEIRO; x++) {
             const val = tabuleiro[y][x];
-            if (val === 4) perseguidores.push({ x, y, tipo: 'rei', val });
-            else if (val === 5) perseguidores.push({ x, y, tipo: 'rainha', val });
-            else if (val === 6) perseguidores.push({ x, y, tipo: 'bispo', val });
+
+            if (val === 4) {
+                listaPerseguidores.push({ x, y, tipo: "rei", val });
+            } else if (val === 5) {
+                listaPerseguidores.push({ x, y, tipo: "rainha", val });
+            } else if (val === 6) {
+                listaPerseguidores.push({ x, y, tipo: "bispo", val });
+            }
         }
     }
 
-    perseguidores.forEach(p => {
-        // Confirma se o perseguidor ainda está no tabuleiro (não foi sobrescrito)
-        if (tabuleiro[p.y][p.x] !== p.val) return;
+    for (const p of listaPerseguidores) {
+        // Não processa uma peça que já não esteja na posição original.
+        if (tabuleiro[p.y][p.x] !== p.val) continue;
 
-        // Encontra o plebeu mais próximo
+        // Procura o plebeu mais próximo.
         let alvo = null;
         let menorDist = Infinity;
 
         for (let py = 0; py < TAMANHO_TABULEIRO; py++) {
             for (let px = 0; px < TAMANHO_TABULEIRO; px++) {
                 if (tabuleiro[py][px] >= 10) {
-                    const dist = Math.abs(px - p.x) + Math.abs(py - p.y);
+                    const dist =
+                        Math.abs(px - p.x) + Math.abs(py - p.y);
+
                     if (dist < menorDist) {
                         menorDist = dist;
                         alvo = { x: px, y: py };
@@ -31,54 +39,59 @@
             }
         }
 
-        if (!alvo) return;
+        if (!alvo) continue;
 
         let nx = p.x;
         let ny = p.y;
 
-        // Movimento do Rei e Rainha (passo de 1 casa em qualquer direção)
-        if (p.tipo === 'rei' || p.tipo === 'rainha') {
+        if (p.tipo === "rei" || p.tipo === "rainha") {
+            // Rei e rainha: uma casa em qualquer direção.
             if (alvo.x > p.x) nx++;
             else if (alvo.x < p.x) nx--;
-            
+
             if (alvo.y > p.y) ny++;
             else if (alvo.y < p.y) ny--;
-        }
-
-        // Movimento estrito do Bispo (APENAS DIAGONAL PURA - NUNCA RETA)
-        if (p.tipo === 'bispo') {
+        } else if (p.tipo === "bispo") {
+            // O bispo NUNCA se move na horizontal ou na vertical.
             const dx = alvo.x - p.x;
             const dy = alvo.y - p.y;
 
-            // O bispo SÓ PODE se mover se houver variação tanto em X quanto em Y
-            if (dx !== 0 && dy !== 0) {
-                nx += dx > 0 ? 1 : -1;
-                ny += dy > 0 ? 1 : -1;
-            } else {
-                // Se o plebeu estiver na mesma linha ou coluna, o bispo FICA PARADO 
-                nx = p.x;
-                ny = p.y;
+            if (dx === 0 || dy === 0) {
+                continue;
             }
+
+            nx = p.x + (dx > 0 ? 1 : -1);
+            ny = p.y + (dy > 0 ? 1 : -1);
         }
 
-        // Validação de limites do tabuleiro
-        if (nx >= 0 && nx < TAMANHO_TABULEIRO && ny >= 0 && ny < TAMANHO_TABULEIRO) {
-            const destino = tabuleiro[ny][nx];
-
-            // Bloqueia se tentar andar em paredes (1) ou soldados (3)
-            if (destino === 1 || destino === 3) return;
-
-            // Se atingir um Plebeu
-            if (destino >= 10) {
-                capturado();
-                return;
-            }
-
-            // Move se a casa estiver vazia (0)
-            if (destino === 0) {
-                tabuleiro[p.y][p.x] = 0;
-                tabuleiro[ny][nx] = p.val;
-            }
+        // Verifica os limites do tabuleiro.
+        if (
+            nx < 0 ||
+            nx >= TAMANHO_TABULEIRO ||
+            ny < 0 ||
+            ny >= TAMANHO_TABULEIRO
+        ) {
+            continue;
         }
-    });
+
+        const destino = tabuleiro[ny][nx];
+
+        // Não atravessa paredes nem soldados.
+        if (destino === 1 || destino === 3) continue;
+
+        // Não permite que dois perseguidores ocupem a mesma casa.
+        if (destino === 4 || destino === 5 || destino === 6) continue;
+
+        // Captura um plebeu se a casa de destino estiver ocupada por ele.
+        if (destino >= 10) {
+            capturado();
+            continue;
+        }
+
+        // Só move a peça se o destino estiver vazio.
+        if (destino === 0) {
+            tabuleiro[p.y][p.x] = 0;
+            tabuleiro[ny][nx] = p.val;
+        }
+    }
 }
