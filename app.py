@@ -3,7 +3,7 @@ import sqlite3
 import secrets
 from functools import wraps
 from datetime import datetime, timezone
-from flask import Flask, Response, get_flashed_messages
+from flask import Flask, Response
 from flask import (
     Flask, render_template_string, request, redirect,
     url_for, session, flash, jsonify
@@ -19,7 +19,6 @@ DATABASE_PATH = os.environ.get(
     "DATABASE_PATH",
     os.path.join(os.path.dirname(__file__), "jobosan_jogos.db")
 )
-
 @app.route('/google510f4f340be76af9.html')
 def google_verification():
     return "google-site-verification: google510f4f340be76af9.html"
@@ -45,6 +44,10 @@ def sitemap():
     return Response(xml_content, mimetype='application/xml')
 
 # =======================================================
+
+def agora():
+    return datetime.now(timezone.utc).isoformat()
+
 
 def agora():
     return datetime.now(timezone.utc).isoformat()
@@ -201,13 +204,8 @@ def cadastro():
         nome = request.form.get("nome", "").strip()
         email = request.form.get("email", "").strip().lower()
         senha = request.form.get("senha", "")
-        
-        if len(nome) < 2:
-            flash("Informe seu nome (pelo menos 2 caracteres).", "erro")
-        elif "@" not in email or len(email) > 254:
-            flash("Informe um e-mail válido.", "erro")
-        elif len(senha) < 6:
-            flash("A senha precisa ter pelo menos 6 caracteres.", "erro")
+        if len(nome) < 2 or "@" not in email or len(senha) < 6:
+            flash("Preencha os campos corretamente (senha mínima de 6 dígitos).", "erro")
         else:
             try:
                 with conectar() as conn:
@@ -216,17 +214,13 @@ def cadastro():
                         (nome, email, generate_password_hash(senha), agora())
                     )
                     uid = cur.lastrowid
-                    conn.execute(
-                        "INSERT INTO progresso (usuario_id, atualizado_em) VALUES (?, ?)",
-                        (uid, agora())
-                    )
+                    conn.execute("INSERT INTO progresso (usuario_id, atualizado_em) VALUES (?, ?)", (uid, agora()))
                 session.clear()
                 session["usuario_id"] = uid
                 session["usuario_nome"] = nome
-                flash("Conta criada com sucesso! Bem-vindo, " + nome + "!", "sucesso")
                 return redirect(url_for("painel"))
             except sqlite3.IntegrityError:
-                flash("Esse e-mail já está cadastrado. Tente fazer login.", "erro")
+                flash("Este e-mail já está cadastrado.", "erro")
 
     conteudo = """
     <div class="auth-container">
@@ -237,7 +231,7 @@ def cadastro():
             <div class="campo"><label>Senha</label><input type="password" name="senha" required></div>
             <button type="submit" class="btn-submit">Cadastrar</button>
         </form>
-        <div class="auth-footer"><p>Já tem conta? <a href=""" + url_for('entrar') + """>Entrar aqui</a></p></div>
+        <div class="auth-footer"><p>Já tem conta? <a href=""" + url_for('entrar') + """>Entrar</a></p></div>
     </div>
     """
     return render_template_string(LAYOUT_GERAL, title="Cadastro — JOBOSAN", content=conteudo)
@@ -247,23 +241,14 @@ def entrar():
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         senha = request.form.get("senha", "")
-        
         with conectar() as conn:
-            usuario = conn.execute(
-                "SELECT * FROM usuarios WHERE email = ?",
-                (email,)
-            ).fetchone()
-        
-        if not usuario:
-            flash("E-mail não encontrado. Verifique ou crie uma conta nova.", "erro")
-        elif not check_password_hash(usuario["senha_hash"], senha):
-            flash("Senha incorreta. Tente novamente.", "erro")
-        else:
+            user = conn.execute("SELECT * FROM usuarios WHERE email = ?", (email,)).fetchone()
+        if user and check_password_hash(user["senha_hash"], senha):
             session.clear()
-            session["usuario_id"] = usuario["id"]
-            session["usuario_nome"] = usuario["nome"]
-            flash("Bem-vindo de volta, " + usuario["nome"] + "!", "sucesso")
+            session["usuario_id"] = user["id"]
+            session["usuario_nome"] = user["nome"]
             return redirect(url_for("painel"))
+        flash("E-mail ou senha incorretos.", "erro")
 
     conteudo = """
     <div class="auth-container">
@@ -273,7 +258,7 @@ def entrar():
             <div class="campo"><label>Senha</label><input type="password" name="senha" required></div>
             <button type="submit" class="btn-submit">Entrar</button>
         </form>
-        <div class="auth-footer"><p>Não tem conta ainda? <a href=""" + url_for('cadastro') + """>Crie uma agora</a></p></div>
+        <div class="auth-footer"><p>Não tem conta? <a href=""" + url_for('cadastro') + """>Cadastre-se</a></p></div>
     </div>
     """
     return render_template_string(LAYOUT_GERAL, title="Entrar — JOBOSAN", content=conteudo)
@@ -281,17 +266,13 @@ def entrar():
 @app.route("/sair", methods=["POST"])
 def sair():
     session.clear()
-    flash("Você saiu com sucesso!", "sucesso")
     return redirect(url_for("index"))
 
 @app.route("/painel")
 @login_obrigatorio
 def painel():
     with conectar() as conn:
-        prog = conn.execute(
-            "SELECT * FROM progresso WHERE usuario_id = ?",
-            (session["usuario_id"],)
-        ).fetchone()
+        prog = conn.execute("SELECT * FROM progresso WHERE usuario_id = ?", (session["usuario_id"],)).fetchone()
     
     pontos = prog["pontos"] if prog else 0
     fases = prog["fases_concluidas"] if prog else 0
@@ -300,92 +281,239 @@ def painel():
     conteudo = f"""
     <div>
         <h2>Painel do Jogador — Reino de Valverde</h2>
-        <div style="display: flex; gap: 15px; margin: 20px 0; flex-wrap: wrap;">
-            <div style="background: #252525; padding: 15px; border-radius: 5px; flex: 1; min-width: 140px;"><h3>Pontos</h3><p style="font-size: 1.5rem; color: #ffcc00;">{pontos}</p></div>
-            <div style="background: #252525; padding: 15px; border-radius: 5px; flex: 1; min-width: 140px;"><h3>Fases Concluídas</h3><p style="font-size: 1.5rem; color: #5cb85c;">{fases} / 4</p></div>
-            <div style="background: #252525; padding: 15px; border-radius: 5px; flex: 1; min-width: 140px;"><h3>Partidas</h3><p style="font-size: 1.5rem; color: #5bc0de;">{partidas}</p></div>
+        <div style="display: flex; gap: 15px; margin: 20px 0;">
+            <div style="background: #252525; padding: 15px; border-radius: 5px; flex: 1;"><h3>Pontos</h3><p style="font-size: 1.5rem; color: #ffcc00;">{pontos}</p></div>
+            <div style="background: #252525; padding: 15px; border-radius: 5px; flex: 1;"><h3>Fases Concluídas</h3><p style="font-size: 1.5rem; color: #5cb85c;">{fases} / 4</p></div>
+            <div style="background: #252525; padding: 15px; border-radius: 5px; flex: 1;"><h3>Partidas</h3><p style="font-size: 1.5rem; color: #5bc0de;">{partidas}</p></div>
         </div>
 
         <h3 style="margin-top: 30px; color: #ffcc00;">Estágios da Fuga</h3>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; background: #25
-        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; background: #252525; border-radius: 6px; overflow: hidden;">
+            <thead>
+                <tr style="background: #333; text-align: left;">
+                    <th style="padding: 10px;">Fase</th>
+                    <th style="padding: 10px;">Nome</th>
+                    <th style="padding: 10px;">Desafio</th>
+                    <th style="padding: 10px;">Pontuação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid #444;"><td style="padding: 10px;">1</td><td style="padding: 10px;">🌾 A Vila Fechada</td><td style="padding: 10px;">Labirinto pequeno, poucos guardas — aprenda a ler os caminhos</td><td style="padding: 10px; color: #ffcc00;">✅ 100 pontos</td></tr>
+                <tr style="border-bottom: 1px solid #444;"><td style="padding: 10px;">2</td><td style="padding: 10px;">🌲 A Floresta Cercada</td><td style="padding: 10px;">Mais paredes, mais soldados — a saída está bem escondida</td><td style="padding: 10px; color: #ffcc00;">✅ 250 pontos</td></tr>
+                <tr style="border-bottom: 1px solid #444;"><td style="padding: 10px;">3</td><td style="padding: 10px;">🏰 Os Muros do Reino</td><td style="padding: 10px;">Labirinto complexo, guardas em pontos estratégicos — calma e atenção</td><td style="padding: 10px; color: #ffcc00;">✅ 400 pontos</td></tr>
+                <tr><td style="padding: 10px;">4</td><td style="padding: 10px;">🌅 O Último Portão</td><td style="padding: 10px;">Todos os perseguidores te cercam, labirinto enorme, UMA saída apenas — consegue?</td><td style="padding: 10px; color: #ffcc00;">✅ 600 pts + Troféu</td></tr>
+            </tbody>
+        </table>
+
+        <div style="text-align: center; margin-top: 35px;">
+            <a href="{url_for('jogo')}" style="background: #f0ad4e; color: #111; padding: 15px 35px; text-decoration: none; border-radius: 6px; font-size: 1.2rem; font-weight: bold;">Iniciar Fuga ♟️</a>
+        </div>
+    </div>
+    """
+    return render_template_string(LAYOUT_GERAL, title="Painel do Jogador — JOBOSAN", content=conteudo)
+
 @app.route("/jogo")
 @login_obrigatorio
 def jogo():
-    return render_template_string(LAYOUT_GERAL, title="Jogo — Fuga dos Plebeus", content="""
+    conteudo = """
     <div class="jogo-layout">
         <aside class="painel-lateral">
-            <div class="status-box">
-                <h3>Status da Partida</h3>
-                <p><strong>Fase Atual:</strong> <span id="fase-atual">1</span> / 4</p>
-                <p><strong>Turnos Restantes:</strong> <span id="turnos-restantes">20</span></p>
-                <p><strong>Plebeus Restantes:</strong> <span id="plebeus-restantes">3</span></p>
-                <p><strong>Pontos da Partida:</strong> <span id="pontos-acumulados">0</span></p>
-            </div>
-
-            <div class="regras-box">
-                <h4>Regras de Movimento</h4>
-                <ul>
-                    <li><strong>Plebeus:</strong> Clica para selecionar, depois clica em uma casa ao lado para mover.</li>
-                    <li><strong>Rei:</strong> Persegue 1 casa por vez em qualquer direção.</li>
-                    <li><strong>Rainha:</strong> Persegue em linha reta ou diagonal, uma casa por turno.</li>
-                    <li><strong>Bispo:</strong> Apenas na diagonal - se não estiver na diagonal, não se move!</li>
-                    <li><strong>Saída:</strong> Leve todos os plebeus até a saída para vencer!</li>
-                </ul>
-            </div>
-
+            <h3 id="titulo-fase-painel" style="color: #ffcc00; margin-top: 0;">Fase 1: A Vila Fechada</h3>
+            <p><strong>Turnos Restantes:</strong> <span id="turnos">20</span></p>
+            <p><strong>Plebeus Vivos:</strong> <span id="plebeus">3</span></p>
+            <p id="descricao-desafio" style="font-size: 0.85rem; color: #bbb; margin-top: 10px;">Labirinto pequeno, poucos guardas — aprenda a ler os caminhos</p>
             <button id="btn-reiniciar" class="btn-acao">Reiniciar Fase</button>
         </aside>
-
         <section class="area-tabuleiro">
-            <h2>Fuga dos Plebeus</h2>
-            <div id="mensagem-status" class="status-alerta">Selecione um plebeu para mover!</div>
+            <div id="status-msg" class="status-alerta">Toque no seu plebeu (🛡️) para selecioná-lo!</div>
             <div id="tabuleiro" class="tabuleiro-xadrez"></div>
         </section>
     </div>
-
     <script>
-        window.GAME_CONFIG = {{ config | tojson }};
-        window.REGRAS = {{ regras | tojson }};
-        window.FASES = {{ fases | tojson }};
+        document.addEventListener("DOMContentLoaded", () => {
+            const tabuleiro = document.getElementById("tabuleiro");
+            const statusMsg = document.getElementById("status-msg");
+            const btnReiniciar = document.getElementById("btn-reiniciar");
+            const spanTurnos = document.getElementById("turnos");
+            const spanPlebeus = document.getElementById("plebeus");
+            const tituloFasePainel = document.getElementById("titulo-fase-painel");
+            const descDesafio = document.getElementById("descricao-desafio");
+
+            let faseAtual = 1;
+            let turnos = 20;
+            
+            const dadosFases = {
+                1: { nome: "🌾 A Vila Fechada", desafio: "Labirinto pequeno, poucos guardas — aprenda a ler os caminhos", turnos: 20, saida: {r: 0, c: 7}, plebeusPos: [{r:7, c:2}, {r:7, c:3}, {r:7, c:4}], cortes: [{tipo: 'rei', r: 2, c: 4}, {tipo: 'bispo', r: 3, c: 2}] },
+                2: { nome: "🌲 A Floresta Cercada", desafio: "Mais paredes, mais soldados — a saída está bem escondida", turnos: 18, saida: {r: 0, c: 0}, plebeusPos: [{r:7, c:5}, {r:7, c:6}, {r:7, c:7}], cortes: [{tipo: 'rei', r: 2, c: 3}, {tipo: 'rainha', r: 4, c: 4}, {tipo: 'bispo', r: 2, c: 6}] },
+                3: { nome: "🏰 Os Muros do Reino", desafio: "Labirinto complexo, guardas em pontos estratégicos — calma e atenção", turnos: 15, saida: {r: 0, c: 3}, plebeusPos: [{r:7, c:1}, {r:7, c:2}, {r:7, c:3}, {r:7, c:4}], cortes: [{tipo: 'rei', r: 1, c: 3}, {tipo: 'rainha', r: 3, c: 5}, {tipo: 'bispo', r: 4, c: 1}, {tipo: 'bispo', r: 2, c: 6}] },
+                4: { nome: "🌅 O Último Portão", desafio: "Todos os perseguidores te cercam, labirinto enorme, UMA saída apenas — consegue?", turnos: 12, saida: {r: 0, c: 7}, plebeusPos: [{r:7, c:0}, {r:7, c:1}, {r:7, c:2}, {r:7, c:3}], cortes: [{tipo: 'rei', r: 1, c: 4}, {tipo: 'rainha', r: 3, c: 3}, {tipo: 'rainha', r: 5, c: 6}, {tipo: 'bispo', r: 2, c: 1}] }
+            };
+
+            let config = dadosFases[faseAtual];
+            let plebeus = JSON.parse(JSON.stringify(config.plebeusPos));
+            let cortes = JSON.parse(JSON.stringify(config.cortes));
+            let indiceSelecionado = null;
+
+            function atualizarPainel() {
+                tituloFasePainel.textContent = `Fase ${faseAtual}: ${config.nome}`;
+                descDesafio.textContent = config.desafio;
+                spanTurnos.textContent = turnos;
+                spanPlebeus.textContent = plebeus.length;
+            }
+
+            function desenhar() {
+                tabuleiro.innerHTML = "";
+                atualizarPainel();
+
+                for (let r = 0; r < 8; r++) {
+                    for (let c = 0; c < 8; c++) {
+                        const casa = document.createElement("div");
+                        casa.className = `casa ${(r + c) % 2 === 0 ? 'clara' : 'escura'}`;
+                        
+                        if (r === config.saida.r && c === config.saida.c) {
+                            casa.innerHTML = "🚪";
+                        }
+
+                        plebeus.forEach((p, idx) => {
+                            if (p.r === r && p.c === c) {
+                                casa.innerHTML = "🛡️";
+                                if (indiceSelecionado === idx) {
+                                    casa.style.border = "3px solid #ffcc00";
+                                    casa.style.backgroundColor = "#444";
+                                }
+                            }
+                        });
+
+                        cortes.forEach(cp => {
+                            if (cp.r === r && cp.c === c) {
+                                if (cp.tipo === 'rei') casa.innerHTML = "👑";
+                                else if (cp.tipo === 'rainha') casa.innerHTML = "♕";
+                                else if (cp.tipo === 'bispo') casa.innerHTML = "♗";
+                            }
+                        });
+
+                        let cr = r, cc = c;
+                        casa.addEventListener("click", () => lidarClique(cr, cc));
+                        tabuleiro.appendChild(casa);
+                    }
+                }
+            }
+
+            function lidarClique(r, c) {
+                let clicadoIdx = plebeus.findIndex(p => p.r === r && p.c === c);
+                if (clicadoIdx !== -1) {
+                    indiceSelecionado = clicadoIdx;
+                    statusMsg.textContent = `Plebeu selecionado! Toque em uma casa vizinha para mover.`;
+                    desenhar();
+                    return;
+                }
+
+                if (indiceSelecionado !== null) {
+                    let p = plebeus[indiceSelecionado];
+                    let diffR = Math.abs(r - p.r);
+                    let diffC = Math.abs(c - p.c);
+
+                    if ((diffR + diffC) === 1) {
+                        p.r = r;
+                        p.c = c;
+                        indiceSelecionado = null;
+                        turnos--;
+
+                        if (r === config.saida.r && c === config.saida.c) {
+                            statusMsg.textContent = "✨ Um plebeu escapou para a liberdade!";
+                            plebeus.splice(indiceSelecionado !== null ? indiceSelecionado : 0, 1);
+                        }
+
+                        moverCorte();
+                        verificarCaptura();
+
+                        if (plebeus.length === 0) {
+                            alert(`🎉 Vitória na fase ${faseAtual} (${config.nome})!`);
+                            avancarFase();
+                            return;
+                        }
+
+                        if (turnos <= 0) {
+                            alert("❌ O tempo esgotou! A Corte cercou os plebeus. Reiniciando fase.");
+                            reiniciarFase();
+                            return;
+                        }
+
+                        desenhar();
+                    } else {
+                        statusMsg.textContent = "⚠️ Movimento inválido! Mova apenas 1 casa adjacente.";
+                    }
+                } else {
+                    statusMsg.textContent = "⚠️ Selecione um plebeu (🛡️) primeiro.";
+                }
+            }
+
+            function moverCorte() {
+                cortes.forEach(cp => {
+                    if (plebeus.length === 0) return;
+                    let alvo = plebeus[0];
+                    let minDist = 999;
+                    plebeus.forEach(p => {
+                        let dist = Math.abs(p.r - cp.r) + Math.abs(p.c - cp.c);
+                        if (dist < minDist) { minDist = dist; alvo = p; }
+                    });
+
+                    if (cp.r < alvo.r) cp.r++;
+                    else if (cp.r > alvo.r) cp.r--;
+                    if (cp.c < alvo.c) cp.c++;
+                    else if (cp.c > alvo.c) cp.c--;
+                });
+            }
+
+            function verificarCaptura() {
+                plebeus = plebeus.filter(p => {
+                    let pego = cortes.some(cp => cp.r === p.r && cp.c === p.c);
+                    if (pego) {
+                        statusMsg.textContent = "⚔️ Um plebeu foi capturado pela Corte!";
+                    }
+                    return !pego;
+                });
+
+                if (plebeus.length === 0) {
+                    alert("⚔️ Todos os plebeus foram capturados!");
+                    reiniciarFase();
+                }
+            }
+
+            function avancarFase() {
+                if (faseAtual < 4) {
+                    faseAtual++;
+                    reiniciarFase();
+                } else {
+                    alert("🏆 Parabéns supremo! Você conquistou o Troféu Liberdade em O Último Portão!");
+                    faseAtual = 1;
+                    reiniciarFase();
+                }
+            }
+
+            function reiniciarFase() {
+                config = dadosFases[faseAtual];
+                turnos = config.turnos;
+                plebeus = JSON.parse(JSON.stringify(config.plebeusPos));
+                cortes = JSON.parse(JSON.stringify(config.cortes));
+                indiceSelecionado = null;
+                statusMsg.textContent = `Fase ${faseAtual} (${config.nome}) iniciada!`;
+                desenhar();
+            }
+
+            btnReiniciar.addEventListener("click", reiniciarFase);
+            reiniciarFase();
+        });
     </script>
-    <script src="/static/game.js"></script>
-    """,
-        config={
-            "titulo": "Fuga dos Plebeus",
-            "limite_turnos": 20,
-        },
-        regras={},
-        fases={}
-    )
-
-
-@app.route("/api/resultado", methods=["POST"])
-@login_obrigatorio
-def resultado():
-    dados = request.get_json(silent=True) or {}
-    try:
-        pontos = int(dados.get("pontos", 0))
-        fases_concluidas = int(dados.get("fases_concluidas", 0))
-    except (TypeError, ValueError):
-        return jsonify(ok=False, erro="Dados inválidos."), 400
-
-    with conectar() as conn:
-        conn.execute("""
-            UPDATE progresso
-            SET pontos = pontos + ?,
-                fases_concluidas = MAX(fases_concluidas, ?),
-                partidas = partidas + 1,
-                atualizado_em = ?
-            WHERE usuario_id = ?
-        """, (pontos, fases_concluidas, datetime.now(timezone.utc).isoformat(), session["usuario_id"]))
-    
-    return jsonify(ok=True)
-
-
+    """
+    return render_template_string(LAYOUT_GERAL, title="Tabuleiro — Fuga dos Plebeus", content=conteudo)
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 5000)),
         debug=False
     )
+
+
+
+
