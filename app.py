@@ -44,11 +44,6 @@ def sitemap():
     return Response(xml_content, mimetype='application/xml')
 
 # =======================================================
-
-def agora():
-    return datetime.now(timezone.utc).isoformat()
-
-
 def agora():
     return datetime.now(timezone.utc).isoformat()
 
@@ -428,7 +423,7 @@ def jogo():
                         verificarCaptura();
 
                         if (plebeus.length === 0) {
-                            alert(`🎉 Vitória na fase ${faseAtual} (${config.nome})!`);
+                            alert(`Vitória na fase ${faseAtual} (${config.nome})!`);
                             avancarFase();
                             return;
                         }
@@ -441,10 +436,10 @@ def jogo():
 
                         desenhar();
                     } else {
-                        statusMsg.textContent = "⚠️ Movimento inválido! Mova apenas 1 casa adjacente.";
+                        statusMsg.textContent = " Movimento inválido! Mova apenas 1 casa adjacente.";
                     }
                 } else {
-                    statusMsg.textContent = "⚠️ Selecione um plebeu (🛡️) primeiro.";
+                    statusMsg.textContent = " Selecione um plebeu (🛡️) primeiro.";
                 }
             }
 
