@@ -347,7 +347,15 @@ def jogo():
   cortes: [{tipo: 'rei', r: 1, c: 3}, {tipo: 'bispo', r: 2, c: 0}] 
 },
 
-                2: { nome: "🌲 A Floresta Cercada", desafio: "Mais paredes, mais soldados — a saída está bem escondida", turnos: 18, saida: {r: 0, c: 0}, plebeusPos: [{r:7, c:5}, {r:7, c:6}, {r:7, c:7}], cortes: [{tipo: 'rei', r: 2, c: 3}, {tipo: 'rainha', r: 4, c: 4}, {tipo: 'bispo', r: 2, c: 6}] },
+                 2: { 
+  nome: "🌲 A Floresta Cercada", 
+  desafio: "Mais paredes, mais soldados — a saída está bem escondida", 
+  turnos: 18, 
+  saida: {r: 0, c: 0}, 
+  plebeusPos: [{r:7, c:5}, {r:7, c:6}, {r:7, c:7}], 
+  cortes: [{tipo: 'rei', r: 3, c: 2}, {tipo: 'rainha', r: 5, c: 3}, {tipo: 'bispo', r: 1, c: 4}] 
+},
+
                 3: { nome: "🏰 Os Muros do Reino", desafio: "Labirinto complexo, guardas em pontos estratégicos — calma e atenção", turnos: 15, saida: {r: 0, c: 3}, plebeusPos: [{r:7, c:1}, {r:7, c:2}, {r:7, c:3}, {r:7, c:4}], cortes: [{tipo: 'rei', r: 1, c: 3}, {tipo: 'rainha', r: 3, c: 5}, {tipo: 'bispo', r: 4, c: 1}, {tipo: 'bispo', r: 2, c: 6}] },
                 4: { nome: "🌅 O Último Portão", desafio: "Todos os perseguidores te cercam, labirinto enorme, UMA saída apenas — consegue?", turnos: 12, saida: {r: 0, c: 7}, plebeusPos: [{r:7, c:0}, {r:7, c:1}, {r:7, c:2}, {r:7, c:3}], cortes: [{tipo: 'rei', r: 1, c: 4}, {tipo: 'rainha', r: 3, c: 3}, {tipo: 'rainha', r: 5, c: 6}, {tipo: 'bispo', r: 2, c: 1}] }
             };
