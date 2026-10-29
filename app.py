@@ -309,7 +309,7 @@ def painel():
         <h3 style="margin-top: 30px; color: #ffcc00;">Estágios da Fuga</h3>
         <table style="width: 100%; border-collapse: collapse; margin-top: 10px; background: #25
         
- @app.route("/jogo")
+@app.route("/jogo")
 @login_obrigatorio
 def jogo():
     return render_template_string(LAYOUT_GERAL, title="Jogo — Fuga dos Plebeus", content="""
