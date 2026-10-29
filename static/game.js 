@@ -45,25 +45,19 @@
             else if (alvo.y < p.y) ny--;
         }
 
-        // Movimento estrito do Bispo (APENAS DIAGONAL PURA)
+        // Movimento estrito do Bispo (APENAS DIAGONAL PURA - NUNCA RETA)
         if (p.tipo === 'bispo') {
             const dx = alvo.x - p.x;
             const dy = alvo.y - p.y;
 
-            // O bispo só se mexe se houver distância em X e Y para formar uma diagonal
-            // Se o plebeu estiver em linha reta exata, o bispo aguarda/ajusta o cerco sem pular nas retas
+            // O bispo SÓ PODE se mover se houver variação tanto em X quanto em Y
             if (dx !== 0 && dy !== 0) {
-                // Tenta se mover na direção diagonal do alvo (1 casa por vez)
                 nx += dx > 0 ? 1 : -1;
                 ny += dy > 0 ? 1 : -1;
             } else {
-                // Se estiver alinhado em cruz, ele fica na mesma posição esperando o plebeu sair da reta
-                // ou tenta dar um passo lateral seguro se houver margem
-                if (Math.abs(dx) > Math.abs(dy)) {
-                    nx += dx > 0 ? 1 : -1;
-                } else if (dy !== 0) {
-                    ny += dy > 0 ? 1 : -1;
-                }
+                // Se o plebeu estiver na mesma linha ou coluna, o bispo FICA PARADO 
+                nx = p.x;
+                ny = p.y;
             }
         }
 
