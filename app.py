@@ -338,13 +338,16 @@ def jogo():
             let turnos = 20;
             
             const dadosFases = {
-                 1: { 
+                  1: { 
   nome: "🌾 A Vila Fechada", 
   desafio: "Labirinto pequeno, poucos guardas — aprenda a ler os caminhos", 
   turnos: 20, 
   saida: {r: 0, c: 7}, 
   plebeusPos: [{r:7, c:2}, {r:7, c:3}, {r:7, c:4}], 
-  cortes: [{tipo: 'rei', r: 1, c: 3}, {tipo: 'bispo', r: 2, c: 0}] 
+  cortes: [
+    {tipo: 'rei', r: 1, c: 3}, 
+    {tipo: 'bispo', r: 2, c: 0}
+  ]
 },
 
                  2: { 
