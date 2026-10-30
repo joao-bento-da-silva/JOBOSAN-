@@ -195,63 +195,7 @@ def index():
     """
     return render_template_string(LAYOUT_GERAL, title="Fuga dos Plebeus — JOBOSAN Jogos", content=conteudo)
 
-@app.route("/cadastro", methods=["GET", "POST"])
-def cadastro():
-    if request.method == "POST":
-        nome = request.form.get("nome", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        senha = request.form.get("senha", "")
-        
-        if len(nome) < 2 or "@" not in email or len(senha) < 6:
-            flash("Preencha os campos corretamente (senha mínima de 6 dígitos).", "erro")
-        else:
-            try:
-                with conectar() as conn:
-                    cur = conn.execute(
-                        "INSERT INTO usuarios (nome, email, senha_hash, criado_em) VALUES (?, ?, ?, ?)",
-                        (nome, email, generate_password_hash(senha), agora())
-                    )
-                    uid = cur.lastrowid
-                    conn.execute("INSERT INTO progresso (usuario_id, atualizado_em) VALUES (?, ?)", (uid, agora()))
-
-                session.permanent = True
-                session["usuario_id"] = uid
-                session["usuario_nome"] = nome
-                
-                return redirect(url_for("painel"))
-            except sqlite3.IntegrityError:
-                flash("Este e-mail já está cadastrado.", "erro")
-
-return render_template_string(REGISTRO_HTML)
-
-@app.route("/entrar", methods=["GET", "POST"])
-def entrar():
-    if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
-        senha = request.form.get("senha", "")
-        with conectar() as conn:
-            user = conn.execute("SELECT * FROM usuarios WHERE email = ?", (email,)).fetchone()
-        if user and check_password_hash(user["senha_hash"], senha):
-            session.clear()
-            session["usuario_id"] = user["id"]
-            session["usuario_nome"] = user["nome"]
-            return redirect(url_for("painel"))
-        flash("E-mail ou senha incorretos.", "erro")
-
-    conteudo = """
-    <div class="auth-container">
-        <h2>Entrar no Jogo</h2>
-        <form method="POST">
-            <div class="campo"><label>E-mail</label><input type="email" name="email" required></div>
-            <div class="campo"><label>Senha</label><input type="password" name="senha" required></div>
-            <button type="submit" class="btn-submit">Entrar</button>
-        </form>
-        <div class="auth-footer"><p>Não tem conta? <a href=""" + url_for('cadastro') + """>Cadastre-se</a></p></div>
-    </div>
-    """
-    return render_template_string(LAYOUT_GERAL, title="Entrar — JOBOSAN", content=conteudo)
-
-@app.route("/sair", methods=["POST"])
+ @app.route("/sair", methods=["POST"])
 def sair():
     session.clear()
     return redirect(url_for("index"))
@@ -545,7 +489,7 @@ def cadastro():
             except sqlite3.IntegrityError:
                 flash("Este e-mail já está cadastrado.", "erro")
 
-return render_template_string(REGISTRO_HTML)
+     return render_template_string(REGISTRO_HTML)
 
 if __name__ == "__main__":
     app.run(
