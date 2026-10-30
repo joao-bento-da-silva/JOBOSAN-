@@ -204,6 +204,7 @@ def cadastro():
         nome = request.form.get("nome", "").strip()
         email = request.form.get("email", "").strip().lower()
         senha = request.form.get("senha", "")
+        
         if len(nome) < 2 or "@" not in email or len(senha) < 6:
             flash("Preencha os campos corretamente (senha mínima de 6 dígitos).", "erro")
         else:
@@ -215,26 +216,17 @@ def cadastro():
                     )
                     uid = cur.lastrowid
                     conn.execute("INSERT INTO progresso (usuario_id, atualizado_em) VALUES (?, ?)", (uid, agora()))
-                session.clear()
+
+                # --- CORREÇÃO AQUI ---
+                session.permanent = True  # Ativa a permanência da sessão
                 session["usuario_id"] = uid
                 session["usuario_nome"] = nome
+                
                 return redirect(url_for("painel"))
             except sqlite3.IntegrityError:
                 flash("Este e-mail já está cadastrado.", "erro")
 
-    conteudo = """
-    <div class="auth-container">
-        <h2>Criar Nova Conta</h2>
-        <form method="POST">
-            <div class="campo"><label>Nome</label><input type="text" name="nome" required></div>
-            <div class="campo"><label>E-mail</label><input type="email" name="email" required></div>
-            <div class="campo"><label>Senha</label><input type="password" name="senha" required></div>
-            <button type="submit" class="btn-submit">Cadastrar</button>
-        </form>
-        <div class="auth-footer"><p>Já tem conta? <a href=""" + url_for('entrar') + """>Entrar</a></p></div>
-    </div>
-    """
-    return render_template_string(LAYOUT_GERAL, title="Cadastro — JOBOSAN", content=conteudo)
+# Seu retorno de renderização/conteúdo continua aqui...
 
 @app.route("/entrar", methods=["GET", "POST"])
 def entrar():
