@@ -454,14 +454,7 @@ def jogo():
         });
     </script>
     """
-@app.route('/robots.txt')
-def robots():
-    content = """User-agent: *
-Allow: /
-Sitemap: https://jobosan.onrender.com/sitemap.xml
-"""
-    return Response(content, mimetype='text/plain')
-
+ 
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
     if request.method == "POST":
