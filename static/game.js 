@@ -60,15 +60,15 @@
             }
         }
         else if (p.tipo === "bispo") {
-            //  BISPO: SÓ se move na DIAGONAL
+            //  BISPO: só se move na diagonal 
             const dx = alvo.x - p.x;
             const dy = alvo.y - p.y;
             
-            // Verificação CHAVE: só se move se estiver na diagonal
+            // Verificação chave: só se move se estiver na diagonal
             const estaNaDiagonal = Math.abs(dx) === Math.abs(dy);
             
             if (!estaNaDiagonal) {
-                continue; // Fora da diagonal = NÃO se move!
+                continue; // Fora da diagonal = não se move!
             }
             
             // Se chegou aqui, está na diagonal — move uma casa na direção certa
