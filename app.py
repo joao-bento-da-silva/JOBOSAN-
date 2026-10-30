@@ -12,10 +12,7 @@ from flask import (
 from werkzeug.security import (
     generate_password_hash, check_password_hash
 )
-
 app = Flask(__name__)
-app.secret_key = "sua_chave_secreta_aqui"  # Obrigatório para manipular sessões
-
 # Define por quanto tempo o login permanecerá salvo (exemplo: 30 dias)
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
