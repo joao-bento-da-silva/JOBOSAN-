@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import secrets
+from datetime import timedelta
 from functools import wraps
 from datetime import datetime, timezone
 from flask import Flask, Response
@@ -13,6 +14,10 @@ from werkzeug.security import (
 )
 
 app = Flask(__name__)
+app.secret_key = "sua_chave_secreta_aqui"  # Obrigatório para manipular sessões
+
+# Define por quanto tempo o login permanecerá salvo (exemplo: 30 dias)
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 
 DATABASE_PATH = os.environ.get(
