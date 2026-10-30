@@ -214,8 +214,7 @@ def cadastro():
                     uid = cur.lastrowid
                     conn.execute("INSERT INTO progresso (usuario_id, atualizado_em) VALUES (?, ?)", (uid, agora()))
 
-                # --- CORREÇÃO AQUI ---
-                session.permanent = True  # Ativa a permanência da sessão
+                session.permanent = True
                 session["usuario_id"] = uid
                 session["usuario_nome"] = nome
                 
@@ -223,7 +222,7 @@ def cadastro():
             except sqlite3.IntegrityError:
                 flash("Este e-mail já está cadastrado.", "erro")
 
-# Seu retorno de renderização/conteúdo continua aqui...
+return render_template_string(REGISTRO_HTML)
 
 @app.route("/entrar", methods=["GET", "POST"])
 def entrar():
