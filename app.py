@@ -12,8 +12,10 @@ from flask import (
 from werkzeug.security import (
     generate_password_hash, check_password_hash
 )
+
 app = Flask(__name__)
-# Define por quanto tempo o login permanecerá salvo (exemplo: 30 dias)
+
+# Configurações de Sessão e Banco
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 
@@ -21,6 +23,7 @@ DATABASE_PATH = os.environ.get(
     "DATABASE_PATH",
     os.path.join(os.path.dirname(__file__), "jobosan_jogos.db")
 )
+
 @app.route('/google510f4f340be76af9.html')
 def google_verification():
     return "google-site-verification: google510f4f340be76af9.html"
@@ -45,7 +48,7 @@ def sitemap():
 """
     return Response(xml_content, mimetype='application/xml')
 
-# =======================================================
+# Funções Utilitárias e Banco de Dados
 def agora():
     return datetime.now(timezone.utc).isoformat()
 
@@ -89,7 +92,7 @@ def login_obrigatorio(fn):
         return fn(*args, **kwargs)
     return wrapper
 
-# LAYOUT COM METADADOS PARA O GOOGLE E ASSINATURA DE AUTORIA JUDICIAL
+# Layout Geral HTML
 LAYOUT_GERAL = """
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -174,6 +177,53 @@ LAYOUT_GERAL = """
 </html>
 """
 
+# Template HTML do Cadastro / Registro
+REGISTRO_HTML = """
+<div class="auth-container">
+    <h2>Criar Conta</h2>
+    <form method="POST">
+        <div class="campo">
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" name="nome" required>
+        </div>
+        <div class="campo">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="campo">
+            <label for="senha">Senha (mínimo 6 dígitos)</label>
+            <input type="password" id="senha" name="senha" required>
+        </div>
+        <button type="submit" class="btn-submit">Cadastrar</button>
+    </form>
+    <div class="auth-footer">
+        <p>Já tem uma conta? <a href="{{ url_for('entrar') }}">Entrar</a></p>
+    </div>
+</div>
+"""
+
+# Template HTML de Login
+LOGIN_HTML = """
+<div class="auth-container">
+    <h2>Entrar</h2>
+    <form method="POST">
+        <div class="campo">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="campo">
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" name="senha" required>
+        </div>
+        <button type="submit" class="btn-submit">Entrar</button>
+    </form>
+    <div class="auth-footer">
+        <p>Não tem uma conta? <a href="{{ url_for('cadastro') }}">Criar Conta</a></p>
+    </div>
+</div>
+"""
+
+# Rotas Principais
 @app.route("/")
 def index():
     if session.get("usuario_id"):
@@ -195,7 +245,26 @@ def index():
     """
     return render_template_string(LAYOUT_GERAL, title="Fuga dos Plebeus — JOBOSAN Jogos", content=conteudo)
 
- @app.route("/sair", methods=["POST"])
+@app.route("/entrar", methods=["GET", "POST"])
+def entrar():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        senha = request.form.get("senha", "")
+        
+        with conectar() as conn:
+            user = conn.execute("SELECT * FROM usuarios WHERE email = ?", (email,)).fetchone()
+            
+        if user and check_password_hash(user["senha_hash"], senha):
+            session.permanent = True
+            session["usuario_id"] = user["id"]
+            session["usuario_nome"] = user["nome"]
+            return redirect(url_for("painel"))
+        else:
+            flash("E-mail ou senha incorretos.", "erro")
+            
+    return render_template_string(LAYOUT_GERAL, title="Entrar — JOBOSAN", content=LOGIN_HTML)
+
+@app.route("/sair", methods=["POST"])
 def sair():
     session.clear()
     return redirect(url_for("index"))
@@ -230,10 +299,10 @@ def painel():
                 </tr>
             </thead>
             <tbody>
-                <tr style="border-bottom: 1px solid #444;"><td style="padding: 10px;">1</td><td style="padding: 10px;">🌾 A Vila Fechada</td><td style="padding: 10px;">Labirinto pequeno, poucos guardas — aprenda a ler os caminhos</td><td style="padding: 10px; color: #ffcc00;">✅ 100 pontos</td></tr>
-                <tr style="border-bottom: 1px solid #444;"><td style="padding: 10px;">2</td><td style="padding: 10px;">🌲 A Floresta Cercada</td><td style="padding: 10px;">Mais paredes, mais soldados — a saída está bem escondida</td><td style="padding: 10px; color: #ffcc00;">✅ 250 pontos</td></tr>
-                <tr style="border-bottom: 1px solid #444;"><td style="padding: 10px;">3</td><td style="padding: 10px;">🏰 Os Muros do Reino</td><td style="padding: 10px;">Labirinto complexo, guardas em pontos estratégicos — calma e atenção</td><td style="padding: 10px; color: #ffcc00;">✅ 400 pontos</td></tr>
-                <tr><td style="padding: 10px;">4</td><td style="padding: 10px;">🌅 O Último Portão</td><td style="padding: 10px;">Todos os perseguidores te cercam, labirinto enorme, UMA saída apenas — consegue?</td><td style="padding: 10px; color: #ffcc00;">✅ 600 pts + Troféu</td></tr>
+                <tr style="border-bottom: 1px solid #444;"><td style="padding: 10px;">1</td><td style="padding: 10px;">🌾 A Vila Fechada</td><td style="padding: 10px;">Labirinto pequeno, poucos guardas — aprenda a ler os caminhos</td><td style="padding: 10px; color: #ffcc00;">100 pontos</td></tr>
+                <tr style="border-bottom: 1px solid #444;"><td style="padding: 10px;">2</td><td style="padding: 10px;">🌲 A Floresta Cercada</td><td style="padding: 10px;">Mais paredes, mais soldados — a saída está bem escondida</td><td style="padding: 10px; color: #ffcc00;">250 pontos</td></tr>
+                <tr style="border-bottom: 1px solid #444;"><td style="padding: 10px;">3</td><td style="padding: 10px;">🏰 Os Muros do Reino</td><td style="padding: 10px;">Labirinto complexo, guardas em pontos estratégicos — calma e atenção</td><td style="padding: 10px; color: #ffcc00;">400 pontos</td></tr>
+                <tr><td style="padding: 10px;">4</td><td style="padding: 10px;">🌅 O Último Portão</td><td style="padding: 10px;">Todos os perseguidores te cercam, labirinto enorme, UMA saída apenas — consegue?</td><td style="padding: 10px; color: #ffcc00;">600 pts + Troféu</td></tr>
             </tbody>
         </table>
 
@@ -275,24 +344,8 @@ def jogo():
             let turnos = 20;
             
             const dadosFases = {
-                 1: { 
-  nome: "🌾 A Vila Fechada", 
-  desafio: "Labirinto pequeno, poucos guardas — aprenda a ler os caminhos", 
-  turnos: 20, 
-  saida: {r: 0, c: 7}, 
-  plebeusPos: [{r:7, c:2}, {r:7, c:3}, {r:7, c:4}], 
-  cortes: [{tipo: 'rei', r: 1, c: 3}, {tipo: 'bispo', r: 2, c: 0}] 
-},
-
-                 2: { 
-  nome: "🌲 A Floresta Cercada", 
-  desafio: "Mais paredes, mais soldados — a saída está bem escondida", 
-  turnos: 18, 
-  saida: {r: 0, c: 0}, 
-  plebeusPos: [{r:7, c:5}, {r:7, c:6}, {r:7, c:7}], 
-  cortes: [{tipo: 'rei', r: 3, c: 2}, {tipo: 'rainha', r: 5, c: 3}, {tipo: 'bispo', r: 1, c: 4}] 
-},
-
+                1: { nome: "🌾 A Vila Fechada", desafio: "Labirinto pequeno, poucos guardas — aprenda a ler os caminhos", turnos: 20, saida: {r: 0, c: 7}, plebeusPos: [{r:7, c:2}, {r:7, c:3}, {r:7, c:4}], cortes: [{tipo: 'rei', r: 1, c: 3}, {tipo: 'bispo', r: 2, c: 0}] },
+                2: { nome: "🌲 A Floresta Cercada", desafio: "Mais paredes, mais soldados — a saída está bem escondida", turnos: 18, saida: {r: 0, c: 0}, plebeusPos: [{r:7, c:5}, {r:7, c:6}, {r:7, c:7}], cortes: [{tipo: 'rei', r: 3, c: 2}, {tipo: 'rainha', r: 5, c: 3}, {tipo: 'bispo', r: 1, c: 4}] },
                 3: { nome: "🏰 Os Muros do Reino", desafio: "Labirinto complexo, guardas em pontos estratégicos — calma e atenção", turnos: 15, saida: {r: 0, c: 3}, plebeusPos: [{r:7, c:1}, {r:7, c:2}, {r:7, c:3}, {r:7, c:4}], cortes: [{tipo: 'rei', r: 1, c: 3}, {tipo: 'rainha', r: 3, c: 5}, {tipo: 'bispo', r: 4, c: 1}, {tipo: 'bispo', r: 2, c: 6}] },
                 4: { nome: "🌅 O Último Portão", desafio: "Todos os perseguidores te cercam, labirinto enorme, UMA saída apenas — consegue?", turnos: 12, saida: {r: 0, c: 7}, plebeusPos: [{r:7, c:0}, {r:7, c:1}, {r:7, c:2}, {r:7, c:3}], cortes: [{tipo: 'rei', r: 1, c: 4}, {tipo: 'rainha', r: 3, c: 3}, {tipo: 'rainha', r: 5, c: 6}, {tipo: 'bispo', r: 2, c: 1}] }
             };
@@ -454,7 +507,8 @@ def jogo():
         });
     </script>
     """
- 
+    return render_template_string(LAYOUT_GERAL, title="Fuga dos Plebeus — Jogo", content=conteudo)
+
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
     if request.method == "POST":
@@ -482,7 +536,7 @@ def cadastro():
             except sqlite3.IntegrityError:
                 flash("Este e-mail já está cadastrado.", "erro")
 
-    return render_template_string(REGISTRO_HTML)
+    return render_template_string(LAYOUT_GERAL, title="Criar Conta — JOBOSAN", content=REGISTRO_HTML)
 
 if __name__ == "__main__":
     app.run(
@@ -490,6 +544,3 @@ if __name__ == "__main__":
         port=int(os.environ.get("PORT", 5000)),
         debug=False
     )
-
-
-
