@@ -1,4 +1,4 @@
-function desenharTabuleiro() {
+ function desenharTabuleiro() {
     const elementoTabuleiro = document.getElementById("tabuleiro");
     elementoTabuleiro.innerHTML = ""; // Limpa o tabuleiro antes de redesenhar
 
@@ -41,4 +41,3 @@ function desenharTabuleiro() {
         }
     }
 }
- 
