@@ -1,43 +1,101 @@
- function desenharTabuleiro() {
-    const elementoTabuleiro = document.getElementById("tabuleiro");
-    elementoTabuleiro.innerHTML = ""; // Limpa o tabuleiro antes de redesenhar
+ // Variável de controle global para mover apenas 1 peça inimiga por turno
+let indiceInimigoAtual = 0;
 
+function moverPerseguidores() {
+    const listaPerseguidores = [];
+
+    // 1. Mapeia as peças da corte presentes no tabuleiro
     for (let y = 0; y < TAMANHO_TABULEIRO; y++) {
         for (let x = 0; x < TAMANHO_TABULEIRO; x++) {
-            const casa = document.createElement("div");
-            casa.classList.add("casa");
-
-            // Alterna a cor padrão do xadrez (claro/escuro)
-            if ((x + y) % 2 === 0) {
-                casa.classList.add("casa-clara");
-            } else {
-                casa.classList.add("casa-escura");
-            }
-
-            const valor = tabuleiro[y][x];
-
-            // 1. SE FOR PAREDE (VALOR 1): Pinta de preto / aplica visual de muro
-            if (valor === 1) {
-                casa.classList.add("parede"); 
-                casa.style.backgroundColor = "#111111"; // Cor preta para o muro do labirinto
-            } 
-            // 2. SE FOR REU/CORTE OU PLEBEUS
-            else if (valor === 4) {
-                casa.innerHTML = "👑"; // Rei
-            } else if (valor === 5) {
-                casa.innerHTML = "♛"; // Rainha
-            } else if (valor === 6) {
-                casa.innerHTML = "♗"; // Bispo
-            } else if (valor >= 10) {
-                casa.innerHTML = "🛡️"; // Plebeu
-            } else if (valor === 99) {
-                casa.innerHTML = "🚪"; // Porta de saída
-            }
-
-            // Adiciona o evento de clique na casa
-            casa.onclick = () => aoClicarNaCasa(x, y);
-
-            elementoTabuleiro.appendChild(casa);
+            const val = tabuleiro[y][x];
+            if (val === 4) listaPerseguidores.push({ x, y, tipo: "rei", val });
+            else if (val === 5) listaPerseguidores.push({ x, y, tipo: "rainha", val });
+            else if (val === 6) listaPerseguidores.push({ x, y, tipo: "bispo", val });
         }
+    }
+
+    // Se não houver perseguidores, encerra o turno da IA
+    if (listaPerseguidores.length === 0) return;
+
+    // Reseta o índice se exceder a quantidade de peças vivas
+    if (indiceInimigoAtual >= listaPerseguidores.length) {
+        indiceInimigoAtual = 0;
+    }
+
+    // 2. REGRA DO XADREZ: Seleciona APENAS UMA peça inimiga para mover neste turno
+    const p = listaPerseguidores[indiceInimigoAtual];
+    
+    // Passa a vez para a próxima peça ser acionada no próximo movimento do jogador
+    indiceInimigoAtual = (indiceInimigoAtual + 1) % listaPerseguidores.length;
+
+    // Garante que a peça ainda está na posição esperada
+    if (tabuleiro[p.y][p.x] !== p.val) return;
+
+    // Procura o plebeu mais próximo
+    let alvo = null;
+    let menorDist = Infinity;
+
+    for (let py = 0; py < TAMANHO_TABULEIRO; py++) {
+        for (let px = 0; px < TAMANHO_TABULEIRO; px++) {
+            if (tabuleiro[py][px] >= 10) {
+                const dist = Math.abs(px - p.x) + Math.abs(py - p.y);
+                if (dist < menorDist) {
+                    menorDist = dist;
+                    alvo = { x: px, y: py };
+                }
+            }
+        }
+    }
+
+    if (!alvo) return;
+
+    let nx = p.x;
+    let ny = p.y;
+
+    // Cálculo do passo (1 casa por vez)
+    if (p.tipo === "rei") {
+        if (alvo.x > p.x) nx++; else if (alvo.x < p.x) nx--;
+        if (alvo.y > p.y) ny++; else if (alvo.y < p.y) ny--;
+    }
+    else if (p.tipo === "rainha") {
+        const dx = alvo.x - p.x;
+        const dy = alvo.y - p.y;
+        if (Math.abs(dx) >= Math.abs(dy) && dx !== 0) {
+            nx = p.x + (dx > 0 ? 1 : -1);
+        } else if (dy !== 0) {
+            ny = p.y + (dy > 0 ? 1 : -1);
+        }
+    }
+    else if (p.tipo === "bispo") {
+        const dx = alvo.x - p.x;
+        const dy = alvo.y - p.y;
+        
+        // MATEMÁTICA DA DIAGONAL: Se não estiver em diagonal perfeita, o bispo NÃO anda
+        if (Math.abs(dx) !== Math.abs(dy)) return;
+
+        nx = p.x + (dx > 0 ? 1 : -1);
+        ny = p.y + (dy > 0 ? 1 : -1);
+    }
+
+    // Validação de limites da matriz
+    if (nx < 0 || nx >= TAMANHO_TABULEIRO || ny < 0 || ny >= TAMANHO_TABULEIRO) return;
+
+    const destino = tabuleiro[ny][nx];
+
+    // Impede colisão com paredes ou outras peças da corte (evita o bug de sumir)
+    if (destino === 1 || destino === 3 || destino === 4 || destino === 5 || destino === 6) return;
+
+    // Captura o plebeu e ocupa a casa corretamente
+    if (destino >= 10) {
+        capturado();
+        tabuleiro[p.y][p.x] = 0;
+        tabuleiro[ny][nx] = p.val;
+        return;
+    }
+
+    // Movimentação em casa vazia
+    if (destino === 0) {
+        tabuleiro[p.y][p.x] = 0;
+        tabuleiro[ny][nx] = p.val;
     }
 }
