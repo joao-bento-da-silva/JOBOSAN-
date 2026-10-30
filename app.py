@@ -489,7 +489,7 @@ def cadastro():
             except sqlite3.IntegrityError:
                 flash("Este e-mail já está cadastrado.", "erro")
 
-     return render_template_string(REGISTRO_HTML)
+    return render_template_string(REGISTRO_HTML)
 
 if __name__ == "__main__":
     app.run(
