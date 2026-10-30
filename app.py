@@ -510,7 +510,43 @@ def jogo():
         });
     </script>
     """
-    return render_template_string(LAYOUT_GERAL, title="Tabuleiro — Fuga dos Plebeus", content=conteudo)
+    @app.route('/robots.txt')
+def robots():
+    content = """User-agent: *
+Allow: /
+Sitemap: https://jobosan.onrender.com/sitemap.xml
+"""
+    return Response(content, mimetype='text/plain')
+
+@app.route("/cadastro", methods=["GET", "POST"])
+def cadastro():
+    if request.method == "POST":
+        nome = request.form.get("nome", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        senha = request.form.get("senha", "")
+        
+        if len(nome) < 2 or "@" not in email or len(senha) < 6:
+            flash("Preencha os campos corretamente (senha mínima de 6 dígitos).", "erro")
+        else:
+            try:
+                with conectar() as conn:
+                    cur = conn.execute(
+                        "INSERT INTO usuarios (nome, email, senha_hash, criado_em) VALUES (?, ?, ?, ?)",
+                        (nome, email, generate_password_hash(senha), agora())
+                    )
+                    uid = cur.lastrowid
+                    conn.execute("INSERT INTO progresso (usuario_id, atualizado_em) VALUES (?, ?)", (uid, agora()))
+
+                session.permanent = True
+                session["usuario_id"] = uid
+                session["usuario_nome"] = nome
+                
+                return redirect(url_for("painel"))
+            except sqlite3.IntegrityError:
+                flash("Este e-mail já está cadastrado.", "erro")
+
+return render_template_string(REGISTRO_HTML)
+
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
