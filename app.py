@@ -510,7 +510,7 @@ def jogo():
         });
     </script>
     """
-    @app.route('/robots.txt')
+@app.route('/robots.txt')
 def robots():
     content = """User-agent: *
 Allow: /
