@@ -18,6 +18,9 @@ app = Flask(__name__)
 # Configurações de Sessão e Banco
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'OK'}), 200
 
 DATABASE_PATH = os.environ.get(
     "DATABASE_PATH",
