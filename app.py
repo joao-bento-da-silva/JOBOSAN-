@@ -455,6 +455,9 @@ def jogo():
             </button>
         </aside>
 
+        conteudo += """
+        </aside>
+
         <section class="area-tabuleiro">
             <div id="status-msg" class="status-alerta">
                 Toque em um plebeu (🛡️) para selecioná-lo!
@@ -465,6 +468,13 @@ def jogo():
     </div>
 
     <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // AQUI CONTINUA TODO O SEU JAVASCRIPT ORIGINAL
+
+    });
+    </script>
+"""
     document.addEventListener("DOMContentLoaded", function () {
 
         const tabuleiro = document.getElementById("tabuleiro");
