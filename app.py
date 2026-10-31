@@ -470,7 +470,13 @@ def jogo():
     <script>
     document.addEventListener("DOMContentLoaded", function () {
 
-        // AQUI CONTINUA TODO O SEU JAVASCRIPT ORIGINAL
+        <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // AQUI CONTINUA TODO O SEU JAVASCRIPT ORIGINAL
+
+});
+</script>
 
     });
     </script>
