@@ -455,7 +455,7 @@ def jogo():
             </button>
         </aside>
 
-        conteudo += """
+    conteudo += """
         </aside>
 
         <section class="area-tabuleiro">
@@ -469,18 +469,11 @@ def jogo():
 
     <script>
     document.addEventListener("DOMContentLoaded", function () {
-
-        <script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    // AQUI CONTINUA TODO O SEU JAVASCRIPT ORIGINAL
-
-});
-</script>
-
+        // AQUI CONTINUA TODO O SEU JAVASCRIPT ORIGINAL
     });
     </script>
 """
+
     document.addEventListener("DOMContentLoaded", function () {
 
         const tabuleiro = document.getElementById("tabuleiro");
