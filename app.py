@@ -435,83 +435,476 @@ def jogo():
                             alert(`Vitória na fase ${faseAtual} (${config.nome})!`);
                             avancarFase();
                             return;
-                        }
+@app.route("/jogo")
+@login_obrigatorio
+def jogo():
+    conteudo = """
+    <div class="jogo-layout">
+        <aside class="painel-lateral">
+            <h3 id="titulo-fase-painel" style="color:#ffcc00; margin-top:0;">
+                Fase 1
+            </h3>
 
-                        if (turnos <= 0) {
-                            alert("❌ O tempo esgotou! A Corte cercou os plebeus. Reiniciando fase.");
-                            reiniciarFase();
-                            return;
-                        }
+            <p><strong>Turnos restantes:</strong> <span id="turnos">20</span></p>
+            <p><strong>Plebeus vivos:</strong> <span id="plebeus">3</span></p>
 
-                        desenhar();
-                    } else {
-                        statusMsg.textContent = " Movimento inválido! Mova apenas 1 casa adjacente.";
-                    }
-                } else {
-                    statusMsg.textContent = " Selecione um plebeu (🛡️) primeiro.";
-                }
+            <p id="descricao-desafio" style="font-size:0.85rem; color:#bbb; margin-top:10px;"></p>
+
+            <button id="btn-reiniciar" class="btn-acao">
+                Reiniciar Fase
+            </button>
+        </aside>
+
+        <section class="area-tabuleiro">
+            <div id="status-msg" class="status-alerta">
+                Toque em um plebeu (🛡️) para selecioná-lo!
+            </div>
+
+            <div id="tabuleiro" class="tabuleiro-xadrez"></div>
+        </section>
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const tabuleiro = document.getElementById("tabuleiro");
+        const statusMsg = document.getElementById("status-msg");
+        const btnReiniciar = document.getElementById("btn-reiniciar");
+        const spanTurnos = document.getElementById("turnos");
+        const spanPlebeus = document.getElementById("plebeus");
+        const tituloFasePainel = document.getElementById("titulo-fase-painel");
+        const descDesafio = document.getElementById("descricao-desafio");
+
+        let faseAtual = 1;
+        let turnos = 20;
+        let indiceSelecionado = null;
+
+        const dadosFases = {
+            1: {
+                nome: "🌾 A Vila Fechada",
+                desafio: "Labirinto pequeno, poucos guardas — aprenda a ler os caminhos",
+                turnos: 20,
+                saida: {r: 0, c: 7},
+                plebeusPos: [
+                    {r: 7, c: 2},
+                    {r: 7, c: 3},
+                    {r: 7, c: 4}
+                ],
+                cortes: [
+                    {tipo: "rei", r: 1, c: 3},
+                    {tipo: "bispo", r: 2, c: 0}
+                ]
+            },
+
+            2: {
+                nome: "🌲 A Floresta Cercada",
+                desafio: "Mais guardas — encontre a saída e proteja os plebeus",
+                turnos: 18,
+                saida: {r: 0, c: 0},
+                plebeusPos: [
+                    {r: 7, c: 5},
+                    {r: 7, c: 6},
+                    {r: 7, c: 7}
+                ],
+                cortes: [
+                    {tipo: "rei", r: 3, c: 2},
+                    {tipo: "rainha", r: 5, c: 3},
+                    {tipo: "bispo", r: 1, c: 4}
+                ]
+            },
+
+            3: {
+                nome: "🏰 Os Muros do Reino",
+                desafio: "Mais perseguidores em pontos estratégicos",
+                turnos: 15,
+                saida: {r: 0, c: 3},
+                plebeusPos: [
+                    {r: 7, c: 1},
+                    {r: 7, c: 2},
+                    {r: 7, c: 3},
+                    {r: 7, c: 4}
+                ],
+                cortes: [
+                    {tipo: "rei", r: 1, c: 3},
+                    {tipo: "rainha", r: 3, c: 5},
+                    {tipo: "bispo", r: 4, c: 1},
+                    {tipo: "bispo", r: 2, c: 6}
+                ]
+            },
+
+            4: {
+                nome: "🌅 O Último Portão",
+                desafio: "Todos os perseguidores estão em campo. Encontre a única saída!",
+                turnos: 12,
+                saida: {r: 0, c: 7},
+                plebeusPos: [
+                    {r: 7, c: 0},
+                    {r: 7, c: 1},
+                    {r: 7, c: 2},
+                    {r: 7, c: 3}
+                ],
+                cortes: [
+                    {tipo: "rei", r: 1, c: 4},
+                    {tipo: "rainha", r: 3, c: 3},
+                    {tipo: "rainha", r: 5, c: 6},
+                    {tipo: "bispo", r: 2, c: 1}
+                ]
             }
+        };
 
-            function moverCorte() {
-                cortes.forEach(cp => {
-                    if (plebeus.length === 0) return;
-                    let alvo = plebeus[0];
-                    let minDist = 999;
-                    plebeus.forEach(p => {
-                        let dist = Math.abs(p.r - cp.r) + Math.abs(p.c - cp.c);
-                        if (dist < minDist) { minDist = dist; alvo = p; }
+        let config;
+        let plebeus = [];
+        let cortes = [];
+
+        function atualizarPainel() {
+            tituloFasePainel.textContent =
+                "Fase " + faseAtual + ": " + config.nome;
+
+            descDesafio.textContent = config.desafio;
+            spanTurnos.textContent = turnos;
+            spanPlebeus.textContent = plebeus.length;
+        }
+
+        function reiniciarFase() {
+            config = dadosFases[faseAtual];
+
+            turnos = config.turnos;
+
+            plebeus = JSON.parse(
+                JSON.stringify(config.plebeusPos)
+            );
+
+            cortes = JSON.parse(
+                JSON.stringify(config.cortes)
+            );
+
+            indiceSelecionado = null;
+
+            statusMsg.textContent =
+                "Fase " + faseAtual + " iniciada! Encontre a saída.";
+
+            desenhar();
+        }
+
+        function desenhar() {
+            tabuleiro.innerHTML = "";
+
+            atualizarPainel();
+
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+
+                    const casa = document.createElement("div");
+
+                    casa.className =
+                        "casa " + ((r + c) % 2 === 0 ? "clara" : "escura");
+
+                    if (
+                        r === config.saida.r &&
+                        c === config.saida.c
+                    ) {
+                        casa.innerHTML = "🚪";
+                    }
+
+                    plebeus.forEach(function (p, idx) {
+                        if (p.r === r && p.c === c) {
+                            casa.innerHTML = "🛡️";
+
+                            if (indiceSelecionado === idx) {
+                                casa.style.border = "3px solid #ffcc00";
+                                casa.style.backgroundColor = "#444";
+                            }
+                        }
                     });
 
-                    if (cp.r < alvo.r) cp.r++;
-                    else if (cp.r > alvo.r) cp.r--;
-                    if (cp.c < alvo.c) cp.c++;
-                    else if (cp.c > alvo.c) cp.c--;
-                });
+                    cortes.forEach(function (cp) {
+                        if (cp.r === r && cp.c === c) {
+
+                            if (cp.tipo === "rei") {
+                                casa.innerHTML = "👑";
+                            } else if (cp.tipo === "rainha") {
+                                casa.innerHTML = "♕";
+                            } else if (cp.tipo === "bispo") {
+                                casa.innerHTML = "♗";
+                            }
+                        }
+                    });
+
+                    casa.addEventListener("click", function () {
+                        lidarClique(r, c);
+                    });
+
+                    tabuleiro.appendChild(casa);
+                }
+            }
+        }
+
+        function lidarClique(r, c) {
+
+            const clicadoIdx = plebeus.findIndex(function (p) {
+                return p.r === r && p.c === c;
+            });
+
+            if (clicadoIdx !== -1) {
+                indiceSelecionado = clicadoIdx;
+
+                statusMsg.textContent =
+                    "Plebeu selecionado! Escolha uma casa vizinha.";
+
+                desenhar();
+                return;
             }
 
-            function verificarCaptura() {
-                plebeus = plebeus.filter(p => {
-                    let pego = cortes.some(cp => cp.r === p.r && cp.c === p.c);
-                    if (pego) {
-                        statusMsg.textContent = "⚔️ Um plebeu foi capturado pela Corte!";
-                    }
-                    return !pego;
-                });
+            if (indiceSelecionado === null) {
+                statusMsg.textContent =
+                    "Selecione um plebeu primeiro.";
+                return;
+            }
+
+            const p = plebeus[indiceSelecionado];
+
+            const diffR = Math.abs(r - p.r);
+            const diffC = Math.abs(c - p.c);
+
+            if ((diffR + diffC) !== 1) {
+                statusMsg.textContent =
+                    "Movimento inválido! Mova apenas uma casa por vez.";
+                return;
+            }
+
+            const ocupadoPorPlebeu = plebeus.some(function (outro, idx) {
+                return idx !== indiceSelecionado &&
+                       outro.r === r && outro.c === c;
+            });
+
+            if (ocupadoPorPlebeu) {
+                statusMsg.textContent =
+                    "Essa casa já está ocupada por outro plebeu.";
+                return;
+            }
+
+            const ocupadoPelaCorte = cortes.some(function (cp) {
+                return cp.r === r && cp.c === c;
+            });
+
+            if (ocupadoPelaCorte) {
+                statusMsg.textContent =
+                    "A Corte está nessa casa! Escolha outro caminho.";
+                return;
+            }
+
+            // Guarda o índice antes de remover o plebeu.
+            const indiceMovido = indiceSelecionado;
+
+            p.r = r;
+            p.c = c;
+
+            turnos--;
+            indiceSelecionado = null;
+
+            // Verifica se o plebeu chegou à saída.
+            if (
+                r === config.saida.r &&
+                c === config.saida.c
+            ) {
+                plebeus.splice(indiceMovido, 1);
+
+                statusMsg.textContent =
+                    "✨ Um plebeu conseguiu escapar!";
+
+                // Se todos escaparam, a fase termina imediatamente.
+                if (plebeus.length === 0) {
+                    alert(
+                        "🏆 Vitória! Todos os plebeus conseguiram escapar!"
+                    );
+
+                    avancarFase();
+                    return;
+                }
+            }
+
+            // Todos os perseguidores tentam avançar uma vez.
+            moverCorte();
+
+            const todosCapturados = verificarCaptura();
+
+            if (todosCapturados) {
+                alert(
+                    "A Corte capturou todos os plebeus. Tente novamente!"
+                );
+
+                reiniciarFase();
+                return;
+            }
+
+            if (turnos <= 0) {
+                alert(
+                    "O tempo acabou! A fase será reiniciada."
+                );
+
+                reiniciarFase();
+                return;
+            }
+
+            desenhar();
+        }
+
+        function moverCorte() {
+
+            const movimentosTodos = [
+                {r: -1, c: -1},
+                {r: -1, c: 0},
+                {r: -1, c: 1},
+                {r: 0, c: -1},
+                {r: 0, c: 1},
+                {r: 1, c: -1},
+                {r: 1, c: 0},
+                {r: 1, c: 1}
+            ];
+
+            const movimentosBispo = [
+                {r: -1, c: -1},
+                {r: -1, c: 1},
+                {r: 1, c: -1},
+                {r: 1, c: 1}
+            ];
+
+            cortes.forEach(function (cp) {
 
                 if (plebeus.length === 0) {
-                    alert("⚔️ Todos os plebeus foram capturados!");
-                    reiniciarFase();
+                    return;
                 }
-            }
 
-            function avancarFase() {
-                if (faseAtual < 4) {
-                    faseAtual++;
-                    reiniciarFase();
-                } else {
-                    alert("🏆 Parabéns supremo! Você conquistou o Troféu Liberdade em O Último Portão!");
-                    faseAtual = 1;
-                    reiniciarFase();
+                // Cada perseguidor procura o plebeu mais próximo.
+                let alvo = plebeus[0];
+                let menorDistancia = Infinity;
+
+                plebeus.forEach(function (p) {
+                    const distancia =
+                        Math.abs(p.r - cp.r) +
+                        Math.abs(p.c - cp.c);
+
+                    if (distancia < menorDistancia) {
+                        menorDistancia = distancia;
+                        alvo = p;
+                    }
+                });
+
+                // O bispo só pode andar na diagonal.
+                // Rei e rainha avançam uma casa em qualquer direção.
+                const movimentos =
+                    cp.tipo === "bispo"
+                    ? movimentosBispo
+                    : movimentosTodos;
+
+                const candidatos = [];
+
+                movimentos.forEach(function (mov) {
+
+                    const novoR = cp.r + mov.r;
+                    const novoC = cp.c + mov.c;
+
+                    // Não permite sair do tabuleiro.
+                    if (
+                        novoR < 0 || novoR > 7 ||
+                        novoC < 0 || novoC > 7
+                    ) {
+                        return;
+                    }
+
+                    // Não permite que perseguidores ocupem a mesma casa.
+                    const casaOcupada = cortes.some(function (outro) {
+                        return outro !== cp &&
+                               outro.r === novoR &&
+                               outro.c === novoC;
+                    });
+
+                    if (casaOcupada) {
+                        return;
+                    }
+
+                    const distanciaAlvo =
+                        Math.abs(alvo.r - novoR) +
+                        Math.abs(alvo.c - novoC);
+
+                    candidatos.push({
+                        r: novoR,
+                        c: novoC,
+                        distancia: distanciaAlvo
+                    });
+                });
+
+                if (candidatos.length === 0) {
+                    return;
                 }
-            }
 
-            function reiniciarFase() {
-                config = dadosFases[faseAtual];
-                turnos = config.turnos;
-                plebeus = JSON.parse(JSON.stringify(config.plebeusPos));
-                cortes = JSON.parse(JSON.stringify(config.cortes));
-                indiceSelecionado = null;
-                statusMsg.textContent = `Fase ${faseAtual} (${config.nome}) iniciada!`;
-                desenhar();
-            }
+                // Escolhe a casa que aproxima o perseguidor do alvo.
+                candidatos.sort(function (a, b) {
+                    return a.distancia - b.distancia;
+                });
 
-            btnReiniciar.addEventListener("click", reiniciarFase);
+                cp.r = candidatos[0].r;
+                cp.c = candidatos[0].c;
+            });
+        }
+
+        function verificarCaptura() {
+
+            const quantidadeAntes = plebeus.length;
+
+            plebeus = plebeus.filter(function (p) {
+
+                const capturado = cortes.some(function (cp) {
+                    return cp.r === p.r && cp.c === p.c;
+                });
+
+                if (capturado) {
+                    statusMsg.textContent =
+                        "⚔️ Um plebeu foi capturado pela Corte!";
+                }
+
+                return !capturado;
+            });
+
+            atualizarPainel();
+
+            return quantidadeAntes > 0 && plebeus.length === 0;
+        }
+
+        function avancarFase() {
+
+            if (faseAtual < 4) {
+                faseAtual++;
+
+                alert("Parabéns! Você avançou para a fase " + faseAtual + ".");
+
+                reiniciarFase();
+
+            } else {
+
+                alert(
+                    "🏆 Parabéns! Você conquistou o Troféu Liberdade!"
+                );
+
+                faseAtual = 1;
+                reiniciarFase();
+            }
+        }
+
+        btnReiniciar.addEventListener("click", function () {
             reiniciarFase();
         });
+
+        reiniciarFase();
+    });
     </script>
     """
-    return render_template_string(LAYOUT_GERAL, title="Fuga dos Plebeus — Jogo", content=conteudo)
 
+    return render_template_string(
+        LAYOUT_GERAL,
+        title="Fuga dos Plebeus — Jogo",
+        content=conteudo
+    )
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
     if request.method == "POST":
